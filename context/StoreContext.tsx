@@ -14,13 +14,15 @@ interface StoreContextType {
   discountCodes: DiscountCode[];
   reviews: Review[];
   isLoading: boolean;
-  
+  wishlist: string[];
+  toggleWishlist: (productId: string) => void;
+
   addToCart: (product: Product, selectedOptions?: { [key: string]: string }) => void;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
   toggleCart: () => void;
   clearCart: () => void;
-  
+
   // Admin Actions
   loginAdmin: (user: string, pass: string) => boolean;
   logoutAdmin: () => void;
@@ -33,7 +35,7 @@ interface StoreContextType {
   returnOrder: (orderId: string) => void;
   addDiscountCode: (code: DiscountCode) => void;
   deleteDiscountCode: (id: string) => void;
-  
+
   // Reviews
   addReview: (review: Omit<Review, 'id' | 'date'>) => Promise<void>;
   getOrderById: (orderId: string) => Order | undefined;
@@ -44,12 +46,12 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 const adjustColor = (color: string, amount: number) => {
-    // Basic hex adjustment guard
-    if (!color || !color.startsWith('#')) return color;
-    try {
-        return '#' + color.replace(/^#/, '').replace(/../g, (color) => 
-            ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
-    } catch (e) { return color; }
+  // Basic hex adjustment guard
+  if (!color || !color.startsWith('#')) return color;
+  try {
+    return '#' + color.replace(/^#/, '').replace(/../g, (color) =>
+      ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
+  } catch (e) { return color; }
 }
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -65,7 +67,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return localStorage.getItem('isAdmin') === 'true';
   });
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [settings, setSettings] = useState<SiteSettings>({
     storeName: 'Hive Store',
     logoText: 'H',
@@ -133,19 +135,19 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
       const { data: discountData } = await supabase.from('discount_codes').select('*');
       if (discountData) {
-         setDiscountCodes(discountData.map((d: any) => ({
-             id: d.id,
-             code: d.code,
-             percentage: d.percentage,
-             expiryDate: d.expiry_date,
-             isActive: d.is_active
-         })));
+        setDiscountCodes(discountData.map((d: any) => ({
+          id: d.id,
+          code: d.code,
+          percentage: d.percentage,
+          expiryDate: d.expiry_date,
+          isActive: d.is_active
+        })));
       }
 
       // Load orders if admin is logged in
       const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
       if (savedIsAdmin) {
-          await fetchOrders();
+        await fetchOrders();
       }
       setIsLoading(false);
     };
@@ -153,23 +155,23 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [isAdmin]);
 
   const fetchOrders = async () => {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-      if (data && data.length > 0) {
-          const dbOrders = data.map((o: any) => ({
-              id: o.id,
-              items: o.items,
-              total: o.total,
-              discountApplied: o.discount_applied,
-              date: o.created_at,
-              status: o.status,
-              customer: o.customer
-          }));
-          setOrders(dbOrders);
-          localStorage.setItem('orders', JSON.stringify(dbOrders));
-      } else if (error) {
-          console.error("Error fetching orders:", error);
-          // Keep localStorage orders if DB fails
-      }
+    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    if (data && data.length > 0) {
+      const dbOrders = data.map((o: any) => ({
+        id: o.id,
+        items: o.items,
+        total: o.total,
+        discountApplied: o.discount_applied,
+        date: o.created_at,
+        status: o.status,
+        customer: o.customer
+      }));
+      setOrders(dbOrders);
+      localStorage.setItem('orders', JSON.stringify(dbOrders));
+    } else if (error) {
+      console.error("Error fetching orders:", error);
+      // Keep localStorage orders if DB fails
+    }
   }
 
   // 2. Save cart to localStorage whenever it changes
@@ -196,6 +198,28 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     root.style.setProperty('--secondary-900', settings.secondaryColor);
   }, [settings.primaryColor, settings.secondaryColor]);
 
+  // Wishlist Logic
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    const saved = localStorage.getItem('wishlist');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const toggleWishlist = (productId: string) => {
+    setWishlist(prev => {
+      const newWishlist = prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId];
+      localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+
+      if (!prev.includes(productId)) {
+        toast.success('تمت الإضافة للمفضلة ❤️', {
+          style: { borderRadius: '10px', background: '#333', color: '#fff' }
+        });
+      }
+      return newWishlist;
+    });
+  };
+
   // Cart Logic
   const addToCart = (product: Product, selectedOptions: { [key: string]: string } = {}) => {
     // 1. Debounce check per product: Prevent rapid clicks on same product
@@ -206,42 +230,50 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     (window as any)[debounceKey] = now;
 
     if (product.stock <= 0) {
-        toast.error('عذراً، هذا المنتج غير متوفر حالياً.', { id: `stock-error-${product.id}` });
-        return;
+      toast.error('عذراً، هذا المنتج غير متوفر حالياً.', { id: `stock-error-${product.id}` });
+      return;
     }
     setCart(prev => {
       const optionsKey = JSON.stringify(selectedOptions || {});
-      const existingItem = prev.find(item => 
-        item.id === product.id && 
+      const existingItem = prev.find(item =>
+        item.id === product.id &&
         JSON.stringify(item.selectedOptions || {}) === optionsKey
       );
 
       // Simple client-side check for max quantity based on stock
       if (existingItem && existingItem.quantity >= product.stock) {
-          toast.error('لا تتوفر كمية إضافية من هذا المنتج', { id: 'stock-limit' });
-          return prev;
+        toast.error('لا تتوفر كمية إضافية من هذا المنتج', { id: 'stock-limit' });
+        return prev;
       }
 
-      const effectivePrice = (product.salePrice && product.salePrice < product.price) 
-        ? product.salePrice 
+      const effectivePrice = (product.salePrice && product.salePrice < product.price)
+        ? product.salePrice
         : product.price;
 
       if (existingItem) {
-        toast.success('تم زيادة الكمية في السلة', { id: `cart-update-${product.id}` });
-        return prev.map(item => 
-          item.cartItemId === existingItem.cartItemId 
-            ? { ...item, quantity: item.quantity + 1 } 
+        toast.success(`تم زيادة الكمية: ${product.name}`, {
+          id: `cart-update-${product.id}`,
+          icon: '🛒',
+          style: { borderRadius: '10px', background: '#333', color: '#fff' }
+        });
+        return prev.map(item =>
+          item.cartItemId === existingItem.cartItemId
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      
-      toast.success('تمت الإضافة للسلة بنجاح', { id: `cart-add-${product.id}` });
-      return [...prev, { 
-        ...product, 
-        price: effectivePrice, 
-        quantity: 1, 
+
+      toast.success(`تمت الإضافة للسلة: ${product.name}`, {
+        id: `cart-add-${product.id}`,
+        icon: '🎉',
+        style: { borderRadius: '10px', background: '#333', color: '#fff' }
+      });
+      return [...prev, {
+        ...product,
+        price: effectivePrice,
+        quantity: 1,
         selectedOptions,
-        cartItemId: `${product.id}-${Date.now()}` 
+        cartItemId: `${product.id}-${Date.now()}`
       }];
     });
     // setIsCartOpen(true); // Don't auto open cart
@@ -256,8 +288,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!item) return;
 
     if (quantity > item.stock) {
-        toast.error('الكمية المطلوبة غير متوفرة');
-        return;
+      toast.error('الكمية المطلوبة غير متوفرة');
+      return;
     }
 
     if (quantity < 1) {
@@ -265,7 +297,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       toast.success('تم إزالة المنتج من السلة');
       return;
     }
-    setCart(prev => prev.map(item => 
+    setCart(prev => prev.map(item =>
       item.cartItemId === cartItemId ? { ...item, quantity } : item
     ));
   };
@@ -289,197 +321,207 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const updateSettings = async (newSettings: SiteSettings) => {
-      setSettings(newSettings);
-      // Persist to Supabase
-      // Assuming singleton row id=1
-      await supabase.from('site_settings').update({
-          store_name: newSettings.storeName,
-          logo_text: newSettings.logoText,
-          logo_url: newSettings.logoUrl,
-          primary_color: newSettings.primaryColor,
-          secondary_color: newSettings.secondaryColor,
-          currency: newSettings.currency,
-          background_image: newSettings.backgroundImage,
-          background_opacity: newSettings.backgroundOpacity,
-          banner_badge: newSettings.bannerBadge,
-          banner_title: newSettings.bannerTitle,
-          banner_description: newSettings.bannerDescription,
-          banner_button_text: newSettings.bannerButtonText
-      }).eq('id', 1);
-      
-      // If no row exists (first run), insert
-      const {count} = await supabase.from('site_settings').select('*', { count: 'exact', head: true });
-      if (count === 0) {
-           await supabase.from('site_settings').insert({
-              store_name: newSettings.storeName,
-              logo_text: newSettings.logoText,
-              logo_url: newSettings.logoUrl,
-              primary_color: newSettings.primaryColor,
-              secondary_color: newSettings.secondaryColor,
-              currency: newSettings.currency,
-              background_image: newSettings.backgroundImage,
-              background_opacity: newSettings.backgroundOpacity,
-              banner_badge: newSettings.bannerBadge,
-              banner_title: newSettings.bannerTitle,
-              banner_description: newSettings.bannerDescription,
-              banner_button_text: newSettings.bannerButtonText
-           });
-      }
+    setSettings(newSettings);
+    // Persist to Supabase
+    // Assuming singleton row id=1
+    await supabase.from('site_settings').update({
+      store_name: newSettings.storeName,
+      logo_text: newSettings.logoText,
+      logo_url: newSettings.logoUrl,
+      primary_color: newSettings.primaryColor,
+      secondary_color: newSettings.secondaryColor,
+      currency: newSettings.currency,
+      background_image: newSettings.backgroundImage,
+      background_opacity: newSettings.backgroundOpacity,
+      banner_badge: newSettings.bannerBadge,
+      banner_title: newSettings.bannerTitle,
+      banner_description: newSettings.bannerDescription,
+      banner_button_text: newSettings.bannerButtonText
+    }).eq('id', 1);
+
+    // If no row exists (first run), insert
+    const { count } = await supabase.from('site_settings').select('*', { count: 'exact', head: true });
+    if (count === 0) {
+      await supabase.from('site_settings').insert({
+        store_name: newSettings.storeName,
+        logo_text: newSettings.logoText,
+        logo_url: newSettings.logoUrl,
+        primary_color: newSettings.primaryColor,
+        secondary_color: newSettings.secondaryColor,
+        currency: newSettings.currency,
+        background_image: newSettings.backgroundImage,
+        background_opacity: newSettings.backgroundOpacity,
+        banner_badge: newSettings.bannerBadge,
+        banner_title: newSettings.bannerTitle,
+        banner_description: newSettings.bannerDescription,
+        banner_button_text: newSettings.bannerButtonText
+      });
+    }
   };
 
   const addProduct = (product: Product) => setProducts(prev => [product, ...prev]);
-  
+
   const editProduct = async (id: string, updates: Partial<Product>) => {
-      const MOCK = (import.meta as any).env?.VITE_MOCK_DATA === 'true';
-      if (MOCK) {
-          setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } as Product : p));
-          return;
-      }
-      const updatedProduct = await updateProduct(id, updates);
-      if (updatedProduct) {
-          setProducts(prev => prev.map(p => p.id === id ? updatedProduct : p));
-      }
+    const MOCK = (import.meta as any).env?.VITE_MOCK_DATA === 'true';
+    if (MOCK) {
+      setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } as Product : p));
+      return;
+    }
+    const updatedProduct = await updateProduct(id, updates);
+    if (updatedProduct) {
+      setProducts(prev => prev.map(p => p.id === id ? updatedProduct : p));
+    }
   };
 
   const removeProduct = async (id: string) => {
-      await deleteProductMock(id);
-      setProducts(prev => prev.filter(p => p.id !== id));
+    await deleteProductMock(id);
+    setProducts(prev => prev.filter(p => p.id !== id));
   };
 
   const addOrder = async (order: Order) => {
-      // Always add to local state first
-      setOrders(prev => [order, ...prev]);
-      
-      // Decrement Stock locally
-      for (const item of order.items) {
-          const newStock = Math.max(0, item.stock - item.quantity);
-          setProducts(prev => prev.map(p => p.id === item.id ? { ...p, stock: newStock } : p));
-      }
+    // Always add to local state first
+    setOrders(prev => [order, ...prev]);
 
-      // Try to save to Supabase
-      const { error } = await supabase.from('orders').insert({
-          id: order.id,
-          items: order.items,
-          total: order.total,
-          discount_applied: order.discountApplied,
-          status: order.status,
-          customer: order.customer
-      });
-      
-      if (error) {
-          console.error("Order save to DB failed:", error);
-      } else {
-         // Update stock in DB
-         for (const item of order.items) {
-             const newStock = Math.max(0, item.stock - item.quantity);
-             await updateProduct(item.id, { stock: newStock });
-         }
+    // Decrement Stock locally
+    for (const item of order.items) {
+      const newStock = Math.max(0, item.stock - item.quantity);
+      setProducts(prev => prev.map(p => p.id === item.id ? { ...p, stock: newStock } : p));
+    }
+
+    // Try to save to Supabase
+    const { error } = await supabase.from('orders').insert({
+      id: order.id,
+      items: order.items,
+      total: order.total,
+      discount_applied: order.discountApplied,
+      status: order.status,
+      customer: order.customer
+    });
+
+    if (error) {
+      console.error("Order save to DB failed:", error);
+    } else {
+      // Update stock in DB
+      for (const item of order.items) {
+        const newStock = Math.max(0, item.stock - item.quantity);
+        await updateProduct(item.id, { stock: newStock });
       }
+    }
   };
 
   const addDiscountCode = async (code: DiscountCode) => {
-      const { data, error } = await supabase.from('discount_codes').insert({
-          code: code.code,
-          percentage: code.percentage,
-          expiry_date: code.expiryDate,
-          is_active: code.isActive
-      }).select().single();
-      
-      if (!error && data) {
-          setDiscountCodes(prev => [...prev, { ...code, id: data.id }]);
-      }
+    const { data, error } = await supabase.from('discount_codes').insert({
+      code: code.code,
+      percentage: code.percentage,
+      expiry_date: code.expiryDate,
+      is_active: code.isActive
+    }).select().single();
+
+    if (!error && data) {
+      setDiscountCodes(prev => [...prev, { ...code, id: data.id }]);
+    }
   };
 
   const deleteDiscountCode = async (id: string) => {
-      await supabase.from('discount_codes').delete().eq('id', id);
-      setDiscountCodes(prev => prev.filter(d => d.id !== id));
+    await supabase.from('discount_codes').delete().eq('id', id);
+    setDiscountCodes(prev => prev.filter(d => d.id !== id));
   };
 
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
-      // Update locally first
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-      
-      // Try to update in Supabase
-      const { error } = await supabase.from('orders').update({ status }).eq('id', orderId);
-      if (error) {
-          console.error("Order status update failed:", error);
-      }
-      toast.success(`تم تحديث حالة الطلب إلى: ${status === 'pending' ? 'قيد الانتظار' : status === 'shipped' ? 'تم الشحن' : status === 'delivered' ? 'تم التوصيل' : 'مرتجع'}`);
+    // Update locally first
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+
+    // Try to update in Supabase
+    const { error } = await supabase.from('orders').update({ status }).eq('id', orderId);
+    if (error) {
+      console.error("Order status update failed:", error);
+    }
+    toast.success(`تم تحديث حالة الطلب إلى: ${status === 'pending' ? 'قيد الانتظار' : status === 'shipped' ? 'تم الشحن' : status === 'delivered' ? 'تم التوصيل' : 'مرتجع'}`);
   };
 
   const returnOrder = async (orderId: string) => {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) return;
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
 
-      // 1. Return stock for each item in the order
-      for (const item of order.items) {
-          const product = products.find(p => p.id === item.id);
-          if (product) {
-              const newStock = product.stock + item.quantity;
-              // Update locally
-              setProducts(prev => prev.map(p => p.id === item.id ? { ...p, stock: newStock } : p));
-              // Update in DB
-              await updateProduct(item.id, { stock: newStock });
-          }
+    // 1. Return stock for each item in the order
+    for (const item of order.items) {
+      const product = products.find(p => p.id === item.id);
+      if (product) {
+        const newStock = product.stock + item.quantity;
+        // Update locally
+        setProducts(prev => prev.map(p => p.id === item.id ? { ...p, stock: newStock } : p));
+        // Update in DB
+        await updateProduct(item.id, { stock: newStock });
       }
+    }
 
-      // 2. Update order status to 'returned'
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' as Order['status'] } : o));
-      
-      // 3. Update in Supabase
-      const { error } = await supabase.from('orders').update({ status: 'returned' }).eq('id', orderId);
-      if (error) {
-          console.error("Order return failed:", error);
-      }
-      
-      toast.success('تم إرجاع الطلب وإعادة الكميات للمخزون');
+    // 2. Update order status to 'returned'
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'returned' as Order['status'] } : o));
+
+    // 3. Update in Supabase
+    const { error } = await supabase.from('orders').update({ status: 'returned' }).eq('id', orderId);
+    if (error) {
+      console.error("Order return failed:", error);
+    }
+
+    toast.success('تم إرجاع الطلب وإعادة الكميات للمخزون');
   };
 
   // Reviews Functions
   const addReview = async (review: Omit<Review, 'id' | 'date'>) => {
-      const newReview: Review = {
-          ...review,
-          id: `rev-${Date.now()}`,
-          date: new Date().toISOString()
-      };
-      
-      // Add locally
-      setReviews(prev => [...prev, newReview]);
-      
-      // Save to Supabase
-      const { error } = await supabase.from('reviews').insert({
-          id: newReview.id,
-          product_id: newReview.productId,
-          order_id: newReview.orderId,
-          customer_name: newReview.customerName,
-          rating: newReview.rating,
-          comment: newReview.comment
-      });
-      
-      if (error) {
-          console.error("Review save failed:", error);
-      }
+    const newReview: Review = {
+      ...review,
+      id: `rev-${Date.now()}`,
+      date: new Date().toISOString()
+    };
+
+    // Add locally
+    setReviews(prev => [...prev, newReview]);
+
+    // Save to Supabase
+    const { error } = await supabase.from('reviews').insert({
+      id: newReview.id,
+      product_id: newReview.productId,
+      order_id: newReview.orderId,
+      customer_name: newReview.customerName,
+      rating: newReview.rating,
+      comment: newReview.comment
+    });
+
+    if (error) {
+      console.error("Review save failed:", error);
+    }
   };
 
   const getOrderById = (orderId: string) => {
-      return orders.find(o => o.id === orderId);
+    return orders.find(o => o.id === orderId);
   };
 
   const markOrderAsRated = async (orderId: string) => {
-      // Update locally
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, isRated: true } : o));
-      
-      // Update in Supabase
-      await supabase.from('orders').update({ is_rated: true }).eq('id', orderId);
+    // Update locally
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, isRated: true } : o));
+
+    // Update in Supabase
+    await supabase.from('orders').update({ is_rated: true }).eq('id', orderId);
   };
 
   const getProductReviews = (productId: string) => {
-      return reviews.filter(r => r.productId === productId);
+    return reviews.filter(r => r.productId === productId);
   };
 
   return (
-    <StoreContext.Provider value={{ 
-      products, cart, isCartOpen, settings, isAdmin, orders, discountCodes, reviews, isLoading,
+    <StoreContext.Provider value={{
+      products,
+      cart,
+      isCartOpen,
+      settings,
+      isAdmin,
+      orders,
+      discountCodes,
+      reviews,
+      isLoading,
+      wishlist,
+      toggleWishlist,
       addToCart, removeFromCart, updateQuantity, toggleCart, clearCart,
       loginAdmin, logoutAdmin, updateSettings, addProduct, editProduct, removeProduct,
       addOrder, updateOrderStatus, returnOrder, addDiscountCode, deleteDiscountCode,

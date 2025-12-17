@@ -10,11 +10,11 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart, cart, settings } = useStore();
+  const { addToCart, cart, settings, wishlist, toggleWishlist } = useStore();
   const navigate = useNavigate();
   const [isAdding, setIsAdding] = useState(false);
 
-  const getReservedQty = (productId: string) => 
+  const getReservedQty = (productId: string) =>
     cart.filter(i => i.id === productId).reduce((s, i) => s + i.quantity, 0);
 
   const remaining = Math.max(0, (product.stock ?? 0) - getReservedQty(product.id));
@@ -70,6 +70,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             مميز
           </span>
         )}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(product.id);
+          }}
+          className="absolute top-3 left-3 z-20 bg-white/80 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:scale-110 transition-transform group/heart"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-5 w-5 transition-colors ${wishlist.includes(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-400 group-hover/heart:text-red-500'}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={wishlist.includes(product.id) ? 0 : 2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
         <img
           src={product.image}
           alt={product.name}
@@ -139,7 +158,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
       </div>
-    </motion.div>
+    </motion.div >
   );
 };
 

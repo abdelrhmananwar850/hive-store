@@ -3,6 +3,7 @@ import { useStore } from '../context/StoreContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
+import SkeletonProductCard from '../components/SkeletonProductCard';
 
 const Home: React.FC = () => {
   const { products, settings, isLoading } = useStore();
@@ -86,8 +87,8 @@ const Home: React.FC = () => {
                   key={cat}
                   onClick={() => setFilter(cat)}
                   className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === cat
-                      ? 'bg-secondary-900 text-white shadow-md transform scale-105'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-400'
+                    ? 'bg-secondary-900 text-white shadow-md transform scale-105'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-400'
                     }`}
                 >
                   {cat}
@@ -96,13 +97,22 @@ const Home: React.FC = () => {
             </div>
           </div>
 
-          <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            <AnimatePresence>
-              {filteredProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {[...Array(8)].map((_, i) => (
+                <SkeletonProductCard key={i} />
               ))}
-            </AnimatePresence>
-          </motion.div>
+            </div>
+          ) : (
+            <motion.div layout className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              <AnimatePresence>
+                {filteredProducts.map(product => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          )}
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-24 text-center">

@@ -12,7 +12,7 @@ const ProductDetails: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
   const [isAdding, setIsAdding] = useState(false);
-  const { addToCart, cart, products, settings, getProductReviews } = useStore();
+  const { addToCart, cart, products, settings, getProductReviews, wishlist, toggleWishlist } = useStore();
   const barcodeRef = useRef<SVGSVGElement | null>(null);
 
   // Get reviews for this product
@@ -30,40 +30,40 @@ const ProductDetails: React.FC = () => {
 
   useEffect(() => {
     const loadProduct = async () => {
-        if (!id) return;
-        
-        // 1. Try finding in current context first (fastest)
-        const existing = products.find(p => p.id === id);
-        if (existing) {
-            setProduct(existing);
-            if (existing.options && Object.keys(selectedOptions).length === 0) {
-                 // Initialize options if not already set
-                 const defaults: {[key:string]: string} = {};
-                 // Optional: Select first value by default
-                 // existing.options.forEach(opt => defaults[opt.name] = opt.values[0]);
-                 setSelectedOptions(defaults);
-            }
-            return;
-        }
+      if (!id) return;
 
-        const MOCK = (import.meta as any).env?.VITE_MOCK_DATA === 'true';
-        if (MOCK) {
-            const p = products.find(p => p.id === id) || null;
-            setProduct(p);
-            if (p && p.options) setSelectedOptions({});
-        } else {
-            // 2. Fetch from DB if not found
-            try {
-                const data = await fetchProductById(id);
-                setProduct(data || null);
-                if (data && data.options) {
-                    setSelectedOptions({});
-                }
-            } catch (err) {
-                console.error("Failed to load product", err);
-                toast.error("فشل تحميل المنتج");
-            }
+      // 1. Try finding in current context first (fastest)
+      const existing = products.find(p => p.id === id);
+      if (existing) {
+        setProduct(existing);
+        if (existing.options && Object.keys(selectedOptions).length === 0) {
+          // Initialize options if not already set
+          const defaults: { [key: string]: string } = {};
+          // Optional: Select first value by default
+          // existing.options.forEach(opt => defaults[opt.name] = opt.values[0]);
+          setSelectedOptions(defaults);
         }
+        return;
+      }
+
+      const MOCK = (import.meta as any).env?.VITE_MOCK_DATA === 'true';
+      if (MOCK) {
+        const p = products.find(p => p.id === id) || null;
+        setProduct(p);
+        if (p && p.options) setSelectedOptions({});
+      } else {
+        // 2. Fetch from DB if not found
+        try {
+          const data = await fetchProductById(id);
+          setProduct(data || null);
+          if (data && data.options) {
+            setSelectedOptions({});
+          }
+        } catch (err) {
+          console.error("Failed to load product", err);
+          toast.error("فشل تحميل المنتج");
+        }
+      }
     };
     loadProduct();
   }, [id, products]);
@@ -84,21 +84,21 @@ const ProductDetails: React.FC = () => {
   // Get related products (same category or random if not enough)
   const relatedProducts = React.useMemo(() => {
     if (!product) return [];
-    
+
     // First, get products from same category
-    const sameCategory = products.filter(p => 
-      p.id !== product.id && 
-      p.category === product.category && 
+    const sameCategory = products.filter(p =>
+      p.id !== product.id &&
+      p.category === product.category &&
       p.stock > 0
     );
-    
+
     // If not enough, add other products
-    const others = products.filter(p => 
-      p.id !== product.id && 
-      p.category !== product.category && 
+    const others = products.filter(p =>
+      p.id !== product.id &&
+      p.category !== product.category &&
       p.stock > 0
     );
-    
+
     // Combine and limit to 4
     return [...sameCategory, ...others].slice(0, 4);
   }, [product, products]);
@@ -107,21 +107,21 @@ const ProductDetails: React.FC = () => {
     if (product?.barcode && barcodeRef.current && (window as any).JsBarcode) {
       try {
         (window as any).JsBarcode(barcodeRef.current, product.barcode, { format: 'CODE128', displayValue: true, fontSize: 14, height: 60 });
-      } catch {}
+      } catch { }
     }
   }, [product?.barcode]);
 
   const handleAddToCart = () => {
     if (!product || isAdding) return;
     setIsAdding(true);
-    
+
     if (product.options) {
-        const missingOptions = product.options.filter(opt => !selectedOptions[opt.name]);
-        if (missingOptions.length > 0) {
-            toast.error(`يرجى اختيار: ${missingOptions.map(o => o.name).join(' و ')}`, { id: 'missing-options' });
-            setIsAdding(false);
-            return;
-        }
+      const missingOptions = product.options.filter(opt => !selectedOptions[opt.name]);
+      if (missingOptions.length > 0) {
+        toast.error(`يرجى اختيار: ${missingOptions.map(o => o.name).join(' و ')}`, { id: 'missing-options' });
+        setIsAdding(false);
+        return;
+      }
     }
     if (remaining(product) <= 0) {
       toast.error('عذراً، هذا المنتج غير متوفر حالياً.', { id: 'stock-error' });
@@ -132,18 +132,42 @@ const ProductDetails: React.FC = () => {
     setTimeout(() => setIsAdding(false), 500);
   };
 
-  if (!product) return <div className="p-12 text-center text-gray-500">جاري التحميل...</div>;
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse">
+        <div className="mb-6 h-4 bg-gray-200 rounded w-24"></div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div className="rounded-2xl bg-gray-200 aspect-[4/3]"></div>
+            <div className="flex flex-col space-y-4">
+              <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+              <div className="space-y-2 pt-6">
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+              <div className="pt-8 mt-auto">
+                <div className="h-14 bg-gray-200 rounded-xl w-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const isSoldOut = remaining(product) <= 0;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
     >
-      <SEO 
+      <SEO
         title={product.seoTitle || product.name}
         description={product.seoDescription || product.description}
         image={product.image}
@@ -158,39 +182,58 @@ const ProductDetails: React.FC = () => {
           العودة للمتجر
         </Link>
       </div>
-      
+
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          <motion.div 
+          <motion.div
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="rounded-2xl overflow-hidden bg-gray-50 aspect-[4/3] max-h-[400px] relative"
           >
             {isSoldOut && (
-               <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
-                   <motion.span 
-                     initial={{ scale: 0 }}
-                     animate={{ scale: 1 }}
-                     className="bg-black text-white text-xl font-bold px-6 py-3 rounded-xl border-4 border-double border-white shadow-xl"
-                   >
-                       نفذت الكمية
-                   </motion.span>
-               </div>
+              <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="bg-black text-white text-xl font-bold px-6 py-3 rounded-xl border-4 border-double border-white shadow-xl"
+                >
+                  نفذت الكمية
+                </motion.span>
+              </div>
             )}
             {product.salePrice && product.salePrice < product.price && !isSoldOut && (
-               <div className="absolute top-4 right-4 z-10 bg-red-500 text-white font-bold px-3 py-1 rounded-lg shadow-sm">
-                 تخفيض
-               </div>
+              <div className="absolute top-4 right-4 z-10 bg-red-500 text-white font-bold px-3 py-1 rounded-lg shadow-sm">
+                تخفيض
+              </div>
             )}
-            <img 
-              src={product.image} 
-              alt={product.name} 
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleWishlist(product.id);
+              }}
+              className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-6 w-6 transition-colors ${wishlist.includes(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={wishlist.includes(product.id) ? 0 : 2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+            <img
+              src={product.image}
+              alt={product.name}
               className={`w-full h-full object-cover object-center ${isSoldOut ? 'grayscale opacity-50' : ''}`}
             />
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -201,18 +244,18 @@ const ProductDetails: React.FC = () => {
             <div className="flex items-center gap-4 mb-2 text-sm text-gray-500">
               {product.sku && <span className="px-2 py-1 bg-gray-100 rounded">SKU: {product.sku}</span>}
             </div>
-            
+
             <div className="mb-6 flex items-center gap-3">
-               {product.salePrice && product.salePrice < product.price ? (
-                 <>
-                   <span className="text-3xl font-bold text-red-600">{product.salePrice} {settings.currency}</span>
-                   <span className="text-xl text-gray-400 line-through">{product.price} {settings.currency}</span>
-                 </>
-               ) : (
-                  <span className="text-3xl font-bold text-gray-900">{product.price} {settings.currency}</span>
-               )}
+              {product.salePrice && product.salePrice < product.price ? (
+                <>
+                  <span className="text-3xl font-bold text-red-600">{product.salePrice} {settings.currency}</span>
+                  <span className="text-xl text-gray-400 line-through">{product.price} {settings.currency}</span>
+                </>
+              ) : (
+                <span className="text-3xl font-bold text-gray-900">{product.price} {settings.currency}</span>
+              )}
             </div>
-            
+
             <div className="border-t border-gray-100 pt-6 mb-6">
               <h3 className="text-sm font-bold text-gray-900 mb-2">الوصف</h3>
               <p className="text-gray-500 leading-relaxed">{product.description}</p>
@@ -226,73 +269,72 @@ const ProductDetails: React.FC = () => {
 
             {/* Options */}
             {product.options && product.options.length > 0 && (
-                <div className="space-y-4 mb-8">
-                    {product.options.map(option => (
-                        <div key={option.name}>
-                            <h4 className="text-sm font-medium text-gray-900 mb-2">{option.name}</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {option.values.map(val => (
-                                    <button
-                                      key={val}
-                                      onClick={() => !isSoldOut && handleOptionSelect(option.name, val)}
-                                      disabled={isSoldOut}
-                                      className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                                          selectedOptions[option.name] === val
-                                          ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-600 ring-opacity-50'
-                                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                                      } ${isSoldOut ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    >
-                                        {val}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+              <div className="space-y-4 mb-8">
+                {product.options.map(option => (
+                  <div key={option.name}>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">{option.name}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {option.values.map(val => (
+                        <button
+                          key={val}
+                          onClick={() => !isSoldOut && handleOptionSelect(option.name, val)}
+                          disabled={isSoldOut}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${selectedOptions[option.name] === val
+                            ? 'border-primary-600 bg-primary-50 text-primary-700 ring-2 ring-primary-600 ring-opacity-50'
+                            : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                            } ${isSoldOut ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
 
             <div className="mt-auto">
               {isSoldOut ? (
-                  <button disabled className="w-full px-8 py-4 border border-transparent rounded-xl shadow-none text-lg font-bold text-gray-400 bg-gray-100 cursor-not-allowed">
-                    غير متوفر حالياً
-                  </button>
+                <button disabled className="w-full px-8 py-4 border border-transparent rounded-xl shadow-none text-lg font-bold text-gray-400 bg-gray-100 cursor-not-allowed">
+                  غير متوفر حالياً
+                </button>
               ) : (
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={isAdding}
-                    className={`w-full flex items-center justify-center px-8 py-4 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-primary-600 hover:bg-primary-700 transition-all ${isAdding ? 'opacity-75 cursor-not-allowed scale-95' : 'hover:-translate-y-1'}`}
-                  >
-                    {isAdding ? (
-                        <div className="flex items-center gap-2">
-                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            جاري الإضافة...
-                        </div>
-                    ) : 'أضف للسلة'}
-                  </button>
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAdding}
+                  className={`w-full flex items-center justify-center px-8 py-4 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-primary-600 hover:bg-primary-700 transition-all ${isAdding ? 'opacity-75 cursor-not-allowed scale-95' : 'hover:-translate-y-1'}`}
+                >
+                  {isAdding ? (
+                    <div className="flex items-center gap-2">
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      جاري الإضافة...
+                    </div>
+                  ) : 'أضف للسلة'}
+                </button>
               )}
             </div>
-            
+
             <div className="mt-6 flex gap-6 text-sm text-gray-500 justify-center">
-               <div className={`flex items-center gap-2 ${isSoldOut ? 'text-red-500' : 'text-green-500'}`}>
-                  {isSoldOut ? (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        الكمية نفذت
-                      </>
-                  ) : (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                        متوفر
-                      </>
-                  )}
-               </div>
-               <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                  شحن سريع
-               </div>
+              <div className={`flex items-center gap-2 ${isSoldOut ? 'text-red-500' : 'text-green-500'}`}>
+                {isSoldOut ? (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    الكمية نفذت
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                    متوفر
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                شحن سريع
+              </div>
             </div>
           </motion.div>
         </div>
@@ -300,7 +342,7 @@ const ProductDetails: React.FC = () => {
 
       {/* Reviews Section */}
       {productReviews.length > 0 && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
@@ -325,7 +367,7 @@ const ProductDetails: React.FC = () => {
               </svg>
             </div>
           </div>
-          
+
           <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
             {productReviews.map((review) => (
               <div key={review.id} className="bg-gray-50 rounded-xl p-4">
@@ -360,7 +402,7 @@ const ProductDetails: React.FC = () => {
 
       {/* Related Products Section */}
       {relatedProducts.length > 0 && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -377,17 +419,17 @@ const ProductDetails: React.FC = () => {
               <p className="text-sm text-gray-500">منتجات مشابهة قد تعجبك</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {relatedProducts.map((relatedProduct) => (
-              <Link 
-                key={relatedProduct.id} 
+              <Link
+                key={relatedProduct.id}
                 to={`/product/${relatedProduct.id}`}
                 className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300"
               >
                 <div className="aspect-square overflow-hidden bg-gray-50">
-                  <img 
-                    src={relatedProduct.image} 
+                  <img
+                    src={relatedProduct.image}
                     alt={relatedProduct.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
