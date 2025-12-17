@@ -805,104 +805,106 @@ const Admin: React.FC = () => {
               </div>
 
               {!useGridTable && (
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                  {/* Table Header */}
-                  <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-200">
-                    <div className="col-span-4 text-sm font-bold text-gray-600">المنتج</div>
-                    <div className="col-span-2 text-sm font-bold text-gray-600 text-center">السعر</div>
-                    <div className="col-span-2 text-sm font-bold text-gray-600 text-center">المخزون</div>
-                    <div className="col-span-1 text-sm font-bold text-gray-600 text-center">مميز</div>
-                    <div className="col-span-3 text-sm font-bold text-gray-600 text-center">الإجراءات</div>
-                  </div>
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm overflow-x-auto">
+                  <div className="min-w-[800px]">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-200">
+                      <div className="col-span-4 text-sm font-bold text-gray-600">المنتج</div>
+                      <div className="col-span-2 text-sm font-bold text-gray-600 text-center">السعر</div>
+                      <div className="col-span-2 text-sm font-bold text-gray-600 text-center">المخزون</div>
+                      <div className="col-span-1 text-sm font-bold text-gray-600 text-center">مميز</div>
+                      <div className="col-span-3 text-sm font-bold text-gray-600 text-center">الإجراءات</div>
+                    </div>
 
-                  {/* Table Body */}
-                  <div className="divide-y divide-gray-100">
-                    {filteredProducts.length === 0 ? (
-                      <div className="py-16 text-center text-gray-400">
-                        <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                        <p className="font-bold">لا توجد منتجات</p>
-                      </div>
-                    ) : filteredProducts.map((p) => (
-                      <div key={p.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
-                        {/* Product Name & Category */}
-                        <div className="col-span-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${p.stock > 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
-                              {p.name.charAt(0)}
-                            </div>
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-gray-900 truncate">{p.name}</h4>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500">{getCategoryName(p.category)}</span>
-                                {p.salePrice && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">خصم</span>}
+                    {/* Table Body */}
+                    <div className="divide-y divide-gray-100">
+                      {filteredProducts.length === 0 ? (
+                        <div className="py-16 text-center text-gray-400">
+                          <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                          <p className="font-bold">لا توجد منتجات</p>
+                        </div>
+                      ) : filteredProducts.map((p) => (
+                        <div key={p.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
+                          {/* Product Name & Category */}
+                          <div className="col-span-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${p.stock > 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                {p.name.charAt(0)}
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="font-bold text-gray-900 truncate">{p.name}</h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">{getCategoryName(p.category)}</span>
+                                  {p.salePrice && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">خصم</span>}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Price */}
-                        <div className="col-span-2 text-center">
-                          {p.salePrice ? (
-                            <div>
-                              <div className="font-bold text-primary-600">{p.salePrice} {settings.currency}</div>
-                              <div className="text-xs text-gray-400 line-through">{p.price}</div>
-                            </div>
-                          ) : (
-                            <div className="font-bold text-gray-900">{p.price} {settings.currency}</div>
-                          )}
-                        </div>
+                          {/* Price */}
+                          <div className="col-span-2 text-center">
+                            {p.salePrice ? (
+                              <div>
+                                <div className="font-bold text-primary-600">{p.salePrice} {settings.currency}</div>
+                                <div className="text-xs text-gray-400 line-through">{p.price}</div>
+                              </div>
+                            ) : (
+                              <div className="font-bold text-gray-900">{p.price} {settings.currency}</div>
+                            )}
+                          </div>
 
-                        {/* Stock */}
-                        <div className="col-span-2 text-center">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' :
-                            p.stock > 0 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                              'bg-red-50 text-red-700 border border-red-200'
-                            }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-green-500' :
-                              p.stock > 0 ? 'bg-yellow-500' :
-                                'bg-red-500'
-                              }`}></span>
-                            {p.stock > 0 ? p.stock : 'نفد'}
-                          </span>
-                        </div>
+                          {/* Stock */}
+                          <div className="col-span-2 text-center">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' :
+                              p.stock > 0 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                'bg-red-50 text-red-700 border border-red-200'
+                              }`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-green-500' :
+                                p.stock > 0 ? 'bg-yellow-500' :
+                                  'bg-red-500'
+                                }`}></span>
+                              {p.stock > 0 ? p.stock : 'نفد'}
+                            </span>
+                          </div>
 
-                        {/* Best Seller */}
-                        <div className="col-span-1 text-center">
-                          <button
-                            onClick={() => handleToggleBestSeller(p)}
-                            className={`p-2 rounded-lg transition-all ${p.isBestSeller ? 'bg-yellow-100 text-yellow-500 shadow-sm' : 'bg-gray-100 text-gray-300 hover:text-yellow-400 hover:bg-yellow-50'}`}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          </button>
-                        </div>
+                          {/* Best Seller */}
+                          <div className="col-span-1 text-center">
+                            <button
+                              onClick={() => handleToggleBestSeller(p)}
+                              className={`p-2 rounded-lg transition-all ${p.isBestSeller ? 'bg-yellow-100 text-yellow-500 shadow-sm' : 'bg-gray-100 text-gray-300 hover:text-yellow-400 hover:bg-yellow-50'}`}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            </button>
+                          </div>
 
-                        {/* Actions */}
-                        <div className="col-span-3 flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => openEditProduct(p)}
-                            className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold transition-colors border border-blue-200"
-                          >
-                            تعديل
-                          </button>
-                          <button
-                            onClick={() => handleToggleSoldOut(p)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${p.stock > 0 ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200' : 'bg-green-50 hover:bg-green-100 text-green-600 border-green-200'}`}
-                          >
-                            {p.stock > 0 ? 'نفاد' : 'تفعيل'}
-                          </button>
-                          <button
-                            onClick={() => removeProduct(p.id)}
-                            className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors border border-red-200"
-                          >
-                            حذف
-                          </button>
+                          {/* Actions */}
+                          <div className="col-span-3 flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => openEditProduct(p)}
+                              className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold transition-colors border border-blue-200"
+                            >
+                              تعديل
+                            </button>
+                            <button
+                              onClick={() => handleToggleSoldOut(p)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${p.stock > 0 ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200' : 'bg-green-50 hover:bg-green-100 text-green-600 border-green-200'}`}
+                            >
+                              {p.stock > 0 ? 'نفاد' : 'تفعيل'}
+                            </button>
+                            <button
+                              onClick={() => removeProduct(p.id)}
+                              className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors border border-red-200"
+                            >
+                              حذف
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
 
                   {/* Table Footer */}
