@@ -12,39 +12,7 @@ import Admin from './pages/Admin';
 import Checkout from './pages/Checkout';
 import RateOrder from './pages/RateOrder';
 
-// Background component for customer pages
-const BackgroundLayer: React.FC = () => {
-  const { settings } = useStore();
 
-  if (!settings.backgroundImage) return null;
-
-  // Calculate overlay opacity (inverse of background opacity)
-  // Higher backgroundOpacity = less overlay = more visible background
-  const overlayOpacity = 1 - (settings.backgroundOpacity || 15) / 100;
-
-  return (
-    <>
-      {/* Background Image - Full opacity for vivid colors */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none"
-        style={{
-          backgroundImage: `url(${settings.backgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed',
-        }}
-      />
-      {/* Overlay to make content readable */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none bg-white"
-        style={{
-          opacity: overlayOpacity,
-        }}
-      />
-    </>
-  );
-};
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -52,9 +20,6 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-secondary-50 font-cairo text-secondary-900 dir-rtl relative">
-      {/* Background for customer pages only */}
-      {!isAdminPage && <BackgroundLayer />}
-
       {/* Content layer */}
       <div className="flex flex-col min-h-screen bg-gray-50">
         {!isAdminPage && <Navbar />}

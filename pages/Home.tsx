@@ -26,7 +26,13 @@ const Home: React.FC = () => {
 
       {/* 1. Slim Modern Banner */}
       <div className="relative bg-secondary-900 text-white overflow-hidden shadow-lg mb-8">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+        <div
+          className="absolute inset-0 bg-cover bg-center mix-blend-overlay transition-opacity duration-300"
+          style={{
+            backgroundImage: `url('${settings.backgroundImage || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=2000&q=80'}')`,
+            opacity: (settings.backgroundOpacity || 20) / 100
+          }}
+        ></div>
         <div className="absolute inset-0 bg-gradient-to-r from-secondary-900 via-secondary-900/80 to-transparent"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 flex flex-col md:flex-row items-center justify-between gap-4">
