@@ -27,7 +27,7 @@ const Home: React.FC = () => {
       {/* 1. Slim Modern Banner */}
       <div className="relative bg-secondary-900 text-white overflow-hidden shadow-lg mb-8">
         <div
-          className="absolute inset-0 bg-cover bg-center mix-blend-overlay transition-opacity duration-300"
+          className="absolute inset-0 bg-contain bg-center bg-no-repeat mix-blend-overlay transition-opacity duration-300"
           style={{
             backgroundImage: `url('${settings.backgroundImage || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=2000&q=80'}')`,
             opacity: (settings.backgroundOpacity || 20) / 100
