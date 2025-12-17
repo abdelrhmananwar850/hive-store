@@ -14,17 +14,17 @@ import RateOrder from './pages/RateOrder';
 // Background component for customer pages
 const BackgroundLayer: React.FC = () => {
   const { settings } = useStore();
-  
+
   if (!settings.backgroundImage) return null;
-  
+
   // Calculate overlay opacity (inverse of background opacity)
   // Higher backgroundOpacity = less overlay = more visible background
   const overlayOpacity = 1 - (settings.backgroundOpacity || 15) / 100;
-  
+
   return (
     <>
       {/* Background Image - Full opacity for vivid colors */}
-      <div 
+      <div
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
           backgroundImage: `url(${settings.backgroundImage})`,
@@ -35,7 +35,7 @@ const BackgroundLayer: React.FC = () => {
         }}
       />
       {/* Overlay to make content readable */}
-      <div 
+      <div
         className="fixed inset-0 z-0 pointer-events-none bg-white"
         style={{
           opacity: overlayOpacity,
@@ -47,13 +47,13 @@ const BackgroundLayer: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const location = useLocation();
-  const isAdminPage = location.pathname === '/admin';
+  const isAdminPage = location.pathname === '/hive-control-x9k2m';
 
   return (
     <div className="min-h-screen bg-secondary-50 font-cairo text-secondary-900 dir-rtl relative">
       {/* Background for customer pages only */}
       {!isAdminPage && <BackgroundLayer />}
-      
+
       {/* Content layer */}
       <div className="relative z-10">
         {!isAdminPage && <Navbar />}
@@ -62,7 +62,7 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/hive-control-x9k2m" element={<Admin />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/rate/:orderId" element={<RateOrder />} />
           </Routes>

@@ -14,14 +14,14 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             {settings.logoUrl ? (
-              <motion.img 
+              <motion.img
                 whileHover={{ rotate: 10, scale: 1.1 }}
-                src={settings.logoUrl} 
-                alt={settings.storeName} 
-                className="h-10 w-10 rounded-xl object-cover shadow-lg" 
+                src={settings.logoUrl}
+                alt={settings.storeName}
+                className="h-10 w-10 rounded-xl object-cover shadow-lg"
               />
             ) : (
-              <motion.div 
+              <motion.div
                 whileHover={{ rotate: 10, scale: 1.1 }}
                 className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-primary-500/20 shadow-lg"
               >
@@ -34,12 +34,11 @@ const Navbar: React.FC = () => {
           {/* Links */}
           <div className="hidden md:flex gap-8">
             <Link to="/" className="text-secondary-600 hover:text-primary-600 transition-colors font-medium">الرئيسية</Link>
-            <Link to="/admin" className="text-secondary-600 hover:text-primary-600 transition-colors font-medium">الإدارة</Link>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={toggleCart}
               className="relative p-2 text-secondary-600 hover:bg-secondary-100 rounded-full transition-colors"
             >
