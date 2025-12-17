@@ -331,7 +331,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setSettings(newSettings);
     // Persist to Supabase
     // Assuming singleton row id=1
-    await supabase.from('site_settings').update({
+    const dbData = {
       store_name: newSettings.storeName,
       logo_text: newSettings.logoText,
       logo_url: newSettings.logoUrl,
@@ -344,25 +344,52 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       banner_title: newSettings.bannerTitle,
       banner_description: newSettings.bannerDescription,
       banner_button_text: newSettings.bannerButtonText
-    }).eq('id', settingsId);
+    };
 
-    // If no row exists (first run), insert
-    const { count } = await supabase.from('site_settings').select('*', { count: 'exact', head: true });
-    if (count === 0) {
-      const { data } = await supabase.from('site_settings').insert({
-        store_name: newSettings.storeName,
-        logo_text: newSettings.logoText,
-        logo_url: newSettings.logoUrl,
-        primary_color: newSettings.primaryColor,
-        secondary_color: newSettings.secondaryColor,
-        currency: newSettings.currency,
-        background_image: newSettings.backgroundImage,
-        background_opacity: newSettings.backgroundOpacity,
-        banner_badge: newSettings.bannerBadge,
-        banner_title: newSettings.bannerTitle,
-        banner_description: newSettings.bannerDescription,
-        banner_button_text: newSettings.bannerButtonText
-      });
+    // Try Update first
+    const { error: updateError, data } = await supabase
+      .from('site_settings')
+      .update(dbData)
+      .eq('id', settingsId)
+      .select();
+
+    if (updateError || !data || data.length === 0) {
+      console.error("Settings Update Failed, trying Upsert...", updateError);
+
+      // Fallback: Upsert (Insert or Update based on ID if possible, or just Insert a new row if table empty)
+      // Since we suspect ID mismatch or empty table, let's try to fetch ANY row first.
+      const { data: existing } = await supabase.from('site_settings').select('id').limit(1).single();
+
+      if (existing) {
+        // We found a row, but our ID state was wrong. Update THAT row.
+        const { error: retryError } = await supabase
+          .from('site_settings')
+          .update(dbData)
+          .eq('id', existing.id);
+
+        if (retryError) {
+          toast.error(`فشل حفظ الإعدادات: ${retryError.message}`);
+        } else {
+          setSettingsId(existing.id); // Correct our local state
+          toast.success('تم حفظ الإعدادات بنجاح (تم تصحيح السجل)');
+        }
+      } else {
+        // Table is empty, Insert
+        const { error: insertError, data: newData } = await supabase
+          .from('site_settings')
+          .insert(dbData)
+          .select() // Select to get ID
+          .single();
+
+        if (insertError) {
+          toast.error(`فشل إنشاء إعدادات جديدة: ${insertError.message}`);
+        } else if (newData) {
+          setSettingsId(newData.id);
+          toast.success('تم حفظ الإعدادات (إنشاء سجل جديد)');
+        }
+      }
+    } else {
+      toast.success('تم حفظ الإعدادات بنجاح');
     }
   };
 
