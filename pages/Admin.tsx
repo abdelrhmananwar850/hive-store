@@ -12,12 +12,13 @@ const Admin: React.FC = () => {
     isAdmin, loginAdmin, logoutAdmin,
     settings, updateSettings,
     orders, updateOrderStatus, returnOrder,
-    discountCodes, addDiscountCode, deleteDiscountCode
+    discountCodes, addDiscountCode, deleteDiscountCode,
+    reviews, deleteReview
   } = useStore();
 
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'discounts' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'discounts' | 'settings' | 'reviews'>('dashboard');
 
   // --- ANALYTICS DATA PREPARATION ---
   const analyticsData = useMemo(() => {
@@ -544,6 +545,11 @@ const Admin: React.FC = () => {
             {
               id: 'discounts', label: 'الخصومات', icon: (
                 <svg className="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z" /></svg>
+              )
+            },
+            {
+              id: 'reviews', label: 'التقييمات', icon: (
+                <svg className="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
               )
             },
             {
@@ -1412,6 +1418,72 @@ const Admin: React.FC = () => {
 
                 <button type="submit" className="w-full bg-gradient-to-r from-primary-600 to-secondary-900 text-white py-4 rounded-xl font-bold hover:opacity-95 transition text-lg shadow-xl shadow-primary-500/20">حفظ كافة التغييرات</button>
               </form>
+            </div>
+          )}
+
+          {/* REVIEWS TAB */}
+          {activeTab === 'reviews' && (
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900">إدارة التقييمات</h2>
+                  <p className="text-gray-500 text-sm">مراجعة وحذف تقييمات العملاء</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="divide-y divide-gray-100">
+                  {reviews.length === 0 ? (
+                    <div className="py-16 text-center text-gray-400">
+                      <p className="font-bold">لا توجد تقييمات بعد</p>
+                    </div>
+                  ) : (
+                    reviews.map((review) => {
+                      const product = products.find(p => p.id === review.productId);
+                      return (
+                        <div key={review.id} className="p-6 hover:bg-gray-50 transition-colors">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="font-bold text-gray-900">{review.customerName}</span>
+                                <span className="text-sm text-gray-500">• {new Date(review.date).toLocaleDateString('ar-EG')}</span>
+                                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-lg border border-yellow-100">
+                                  <span className="font-bold text-yellow-700 text-sm">{review.rating}</span>
+                                  <svg className="w-4 h-4 text-yellow-500 fill-yellow-500" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                  </svg>
+                                </div>
+                              </div>
+                              <p className="text-gray-600 mb-3">{review.comment}</p>
+                              {product ? (
+                                <div className="flex items-center gap-2 bg-gray-50 w-fit px-3 py-1.5 rounded-lg border border-gray-100">
+                                  <img src={product.image} className="w-6 h-6 rounded object-cover" alt="" />
+                                  <span className="text-xs font-bold text-gray-700">{product.name}</span>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-red-500 bg-red-50 px-2 py-1 rounded">منتج محذوف</span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (window.confirm('هل أنت متأكد من حذف هذا التقييم؟')) {
+                                  deleteReview(review.id);
+                                }
+                              }}
+                              className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors"
+                              title="حذف التقييم"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

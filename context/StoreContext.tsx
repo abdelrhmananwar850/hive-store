@@ -43,6 +43,7 @@ interface StoreContextType {
   getOrderById: (orderId: string) => Order | undefined;
   markOrderAsRated: (orderId: string) => Promise<void>;
   getProductReviews: (productId: string) => Review[];
+  deleteReview: (reviewId: string) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -193,6 +194,20 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           percentage: d.percentage,
           expiryDate: d.expiry_date,
           isActive: d.is_active
+        })));
+      }
+
+      // Fetch Reviews
+      const { data: reviewsData } = await supabase.from('reviews').select('*');
+      if (reviewsData) {
+        setReviews(reviewsData.map((r: any) => ({
+          id: r.id,
+          productId: r.product_id,
+          orderId: r.order_id,
+          customerName: r.customer_name,
+          rating: r.rating,
+          comment: r.comment,
+          date: r.created_at // Assuming created_at is the timestamp
         })));
       }
 
@@ -587,6 +602,15 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return reviews.filter(r => r.productId === productId);
   };
 
+  const deleteReview = async (reviewId: string) => {
+    // Local
+    setReviews(prev => prev.filter(r => r.id !== reviewId));
+    // Supabase
+    const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+    if (error) console.error("Failed to delete review", error);
+    else toast.success('تم حذف التقييم بنجاح');
+  };
+
   const toggleWishlistModal = () => setIsWishlistOpen(!isWishlistOpen);
 
   return (
@@ -607,7 +631,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       addToCart, removeFromCart, updateQuantity, toggleCart, clearCart,
       loginAdmin, logoutAdmin, updateSettings, addProduct, editProduct, removeProduct,
       addOrder, updateOrderStatus, returnOrder, addDiscountCode, deleteDiscountCode,
-      addReview, getOrderById, markOrderAsRated, getProductReviews
+      addReview, getOrderById, markOrderAsRated, getProductReviews, deleteReview
     }}>
       {children}
     </StoreContext.Provider>
