@@ -1,0 +1,229 @@
+/* Google Fonts - Arabic Professional Font */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+
+/* Apply Arabic Font Globally */
+* {
+  font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+body {
+  font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* RTL Direction */
+.dir-rtl {
+  direction: rtl;
+}
+
+/* Line Clamp */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus Styles for Accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
+/* Animation for loading */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Grid.js RTL Styles */
+.gridjs-wrapper {
+  direction: rtl !important;
+}
+
+.gridjs-table {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+.gridjs-thead th {
+  text-align: right !important;
+  font-weight: 700 !important;
+  color: #374151 !important;
+  background: #f9fafb !important;
+  padding: 16px 12px !important;
+  border-bottom: 2px solid #e5e7eb !important;
+}
+
+.gridjs-tbody td {
+  text-align: right !important;
+  padding: 16px 12px !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.gridjs-tr:hover {
+  background: #f9fafb !important;
+}
+
+.gridjs-pagination {
+  direction: rtl !important;
+  display: flex !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 16px !important;
+}
+
+.gridjs-pagination button {
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  background: white !important;
+  font-weight: 600 !important;
+}
+
+.gridjs-pagination button:hover {
+  background: #f3f4f6 !important;
+}
+
+.gridjs-pagination .gridjs-currentPage {
+  background: #0d9488 !important;
+  color: white !important;
+  border-color: #0d9488 !important;
+}
+
+.gridjs-sort {
+  float: left !important;
+}
+
+.gridjs-footer {
+  direction: rtl !important;
+}
+
+.gridjs-summary {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+
+/* Grid.js RTL Table */
+.gridjs-table-rtl {
+  direction: rtl !important;
+  width: 100% !important;
+}
+
+.gridjs-thead-rtl th {
+  text-align: right !important;
+}
+
+.gridjs-tbody-rtl td {
+  text-align: right !important;
+}
+
+/* Grid.js Container RTL */
+.gridjs-container {
+  direction: rtl !important;
+}
+
+.gridjs-head {
+  direction: rtl !important;
+}
+
+
+/* Grid.js Pagination Arabic */
+.gridjs-pages button[title="Next"] {
+  font-size: 0 !important;
+}
+.gridjs-pages button[title="Next"]::after {
+  content: 'التالي' !important;
+  font-size: 14px !important;
+}
+
+.gridjs-pages button[title="Previous"] {
+  font-size: 0 !important;
+}
+.gridjs-pages button[title="Previous"]::after {
+  content: 'السابق' !important;
+  font-size: 14px !important;
+}
+
+.gridjs-summary {
+  font-size: 0 !important;
+}
+
+.gridjs-pagination {
+  flex-direction: row-reverse !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 20px !important;
+  border-top: 1px solid #f3f4f6 !important;
+}
+
+.gridjs-pages {
+  display: flex !important;
+  flex-direction: row-reverse !important;
+  gap: 6px !important;
+}
+
+.gridjs-pages button {
+  min-width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  transition: all 0.2s !important;
+}
+
+.gridjs-pages button:not(.gridjs-currentPage):hover {
+  background: #f3f4f6 !important;
+  transform: translateY(-1px) !important;
+}
+
+.gridjs-pages .gridjs-currentPage {
+  background: linear-gradient(135deg, #0d9488, #0f766e) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3) !important;
+}
