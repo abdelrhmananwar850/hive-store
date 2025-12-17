@@ -32,8 +32,9 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Links */}
+          {/* Links - Hidden */}
           <div className="hidden md:flex gap-8">
-            <Link to="/" className="text-secondary-600 hover:text-primary-600 transition-colors font-medium">الرئيسية</Link>
+            {/* Navigation links removed */}
           </div>
 
           {/* Actions */}
