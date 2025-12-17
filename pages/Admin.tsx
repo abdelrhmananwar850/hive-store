@@ -17,7 +17,7 @@ const Admin: React.FC = () => {
 
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'discounts' | 'settings' | 'shortages'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders' | 'discounts' | 'settings'>('dashboard');
 
   // --- ANALYTICS DATA PREPARATION ---
   const analyticsData = useMemo(() => {
@@ -511,33 +511,13 @@ const Admin: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Mobile Sidebar State
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   return (
-    <div className="h-screen bg-gray-50/50 font-sans flex flex-col md:flex-row overflow-hidden" dir="rtl">
+    <div className="min-h-screen bg-gray-50/50 font-sans flex" dir="rtl">
       <SEO title="لوحة التحكم" />
 
-      {/* MOBILE HEADER */}
-      <div className="md:hidden bg-primary-700 text-white p-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="bg-white/20 w-8 h-8 rounded-lg flex items-center justify-center font-bold backdrop-blur text-sm">
-            {settings.logoText}
-          </div>
-          <h1 className="font-bold text-lg">لوحة المدير</h1>
-        </div>
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-      </div>
-
-      {/* 1. SIDEBAR (Responsive) */}
-      <aside className={`
-        fixed inset-y-0 right-0 z-40 w-64 bg-gradient-to-b from-primary-600 to-primary-700 text-white shadow-2xl transform transition-transform duration-300 ease-in-out
-        md:translate-x-0 md:static md:shadow-none md:h-screen
-        ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
-      `}>
-        <div className="hidden md:flex h-20 items-center gap-3 px-6 border-b border-primary-500/30">
+      {/* 1. SIDEBAR (Fixed Right) */}
+      <aside className="w-64 bg-gradient-to-b from-primary-600 to-primary-700 border-l border-primary-700 h-screen fixed top-0 right-0 z-40 shadow-lg flex flex-col text-white">
+        <div className="h-20 flex items-center gap-3 px-6 border-b border-primary-500/30">
           <div className="bg-white/20 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold backdrop-blur">
             {settings.logoText}
           </div>
@@ -570,19 +550,11 @@ const Admin: React.FC = () => {
               id: 'settings', label: 'الإعدادات', icon: (
                 <svg className="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm9 4a7.963 7.963 0 01-.6 3l2.1 1.6-2 3.4-2.5-1A8.065 8.065 0 0114 20l-.4 2.6H10.4L10 20a8.065 8.065 0 01-3-1.6l-2.5 1-2-3.4 2.1-1.6A7.963 7.963 0 014 12c0-1 .2-2 .6-3L2.5 7.4l2-3.4 2.5 1A8.065 8.065 0 0110 4l.4-2.6h3.2L14 4c1.1.2 2.1.6 3 1.1l2.5-1 2 3.4-2.1 1.6c.4 1 .6 2 .6 3z" /></svg>
               )
-            },
-            {
-              id: 'shortages', label: 'النواقص', icon: (
-                <div className="relative">
-                  <svg className="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                  {products.filter(p => p.stock <= 5).length > 0 && <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>}
-                </div>
-              )
             }
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => { setActiveTab(item.id as any); setIsSidebarOpen(false); }}
+              onClick={() => setActiveTab(item.id as any)}
               className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${activeTab === item.id
                 ? 'bg-white/20 text-white shadow-sm translate-x-1'
                 : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -605,19 +577,11 @@ const Admin: React.FC = () => {
         </div>
       </aside>
 
-      {/* OVERLAY for Mobile */}
-      {isSidebarOpen && (
-        <div
-          onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
-        />
-      )}
-
-      {/* 2. MAIN CONTENT (Flexible) */}
-      <main className="flex-1 p-4 md:p-8 h-full overflow-y-auto w-full">
+      {/* 2. MAIN CONTENT (Margin Right for Sidebar) */}
+      <main className="flex-1 mr-64 p-8 min-h-screen">
 
         {/* Header Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
           {/* Products Card */}
           <div className="group relative bg-gradient-to-br from-primary-500 to-primary-600 p-6 rounded-2xl shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -679,27 +643,6 @@ const Admin: React.FC = () => {
               </div>
               <p className="text-white/80 text-sm font-bold mb-1">المرتجعات</p>
               <p className="text-4xl font-black text-white">{orders.filter(o => o.status === 'returned').length}</p>
-            </div>
-          </div>
-
-          {/* Low Stock Card */}
-          <div
-            onClick={() => setActiveTab('shortages')}
-            className="group relative bg-gradient-to-br from-orange-500 to-red-600 p-6 rounded-2xl shadow-lg shadow-orange-500/20 hover:shadow-xl hover:shadow-orange-500/30 hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
-          >
-            <div className="absolute top-0 left-0 w-full h-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="absolute -top-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-            <div className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-                <span className="text-white/60 text-xs font-bold bg-white/10 px-2 py-1 rounded-lg">تنبيه</span>
-              </div>
-              <p className="text-white/80 text-sm font-bold mb-1">نواقص المخزون</p>
-              <p className="text-4xl font-black text-white">{products.filter(p => p.stock <= 5).length}</p>
             </div>
           </div>
         </div>
@@ -834,106 +777,104 @@ const Admin: React.FC = () => {
               </div>
 
               {!useGridTable && (
-                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm overflow-x-auto">
-                  <div className="min-w-[800px]">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-200">
-                      <div className="col-span-4 text-sm font-bold text-gray-600">المنتج</div>
-                      <div className="col-span-2 text-sm font-bold text-gray-600 text-center">السعر</div>
-                      <div className="col-span-2 text-sm font-bold text-gray-600 text-center">المخزون</div>
-                      <div className="col-span-1 text-sm font-bold text-gray-600 text-center">مميز</div>
-                      <div className="col-span-3 text-sm font-bold text-gray-600 text-center">الإجراءات</div>
-                    </div>
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                  {/* Table Header */}
+                  <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-l from-gray-50 to-white border-b border-gray-200">
+                    <div className="col-span-4 text-sm font-bold text-gray-600">المنتج</div>
+                    <div className="col-span-2 text-sm font-bold text-gray-600 text-center">السعر</div>
+                    <div className="col-span-2 text-sm font-bold text-gray-600 text-center">المخزون</div>
+                    <div className="col-span-1 text-sm font-bold text-gray-600 text-center">مميز</div>
+                    <div className="col-span-3 text-sm font-bold text-gray-600 text-center">الإجراءات</div>
+                  </div>
 
-                    {/* Table Body */}
-                    <div className="divide-y divide-gray-100">
-                      {filteredProducts.length === 0 ? (
-                        <div className="py-16 text-center text-gray-400">
-                          <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                          </svg>
-                          <p className="font-bold">لا توجد منتجات</p>
-                        </div>
-                      ) : filteredProducts.map((p) => (
-                        <div key={p.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
-                          {/* Product Name & Category */}
-                          <div className="col-span-4">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${p.stock > 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
-                                {p.name.charAt(0)}
-                              </div>
-                              <div className="min-w-0">
-                                <h4 className="font-bold text-gray-900 truncate">{p.name}</h4>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-gray-500">{getCategoryName(p.category)}</span>
-                                  {p.salePrice && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">خصم</span>}
-                                </div>
+                  {/* Table Body */}
+                  <div className="divide-y divide-gray-100">
+                    {filteredProducts.length === 0 ? (
+                      <div className="py-16 text-center text-gray-400">
+                        <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        <p className="font-bold">لا توجد منتجات</p>
+                      </div>
+                    ) : filteredProducts.map((p) => (
+                      <div key={p.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50/50 transition-colors">
+                        {/* Product Name & Category */}
+                        <div className="col-span-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${p.stock > 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                              {p.name.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-gray-900 truncate">{p.name}</h4>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">{getCategoryName(p.category)}</span>
+                                {p.salePrice && <span className="text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">خصم</span>}
                               </div>
                             </div>
                           </div>
-
-                          {/* Price */}
-                          <div className="col-span-2 text-center">
-                            {p.salePrice ? (
-                              <div>
-                                <div className="font-bold text-primary-600">{p.salePrice} {settings.currency}</div>
-                                <div className="text-xs text-gray-400 line-through">{p.price}</div>
-                              </div>
-                            ) : (
-                              <div className="font-bold text-gray-900">{p.price} {settings.currency}</div>
-                            )}
-                          </div>
-
-                          {/* Stock */}
-                          <div className="col-span-2 text-center">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' :
-                              p.stock > 0 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                'bg-red-50 text-red-700 border border-red-200'
-                              }`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-green-500' :
-                                p.stock > 0 ? 'bg-yellow-500' :
-                                  'bg-red-500'
-                                }`}></span>
-                              {p.stock > 0 ? p.stock : 'نفد'}
-                            </span>
-                          </div>
-
-                          {/* Best Seller */}
-                          <div className="col-span-1 text-center">
-                            <button
-                              onClick={() => handleToggleBestSeller(p)}
-                              className={`p-2 rounded-lg transition-all ${p.isBestSeller ? 'bg-yellow-100 text-yellow-500 shadow-sm' : 'bg-gray-100 text-gray-300 hover:text-yellow-400 hover:bg-yellow-50'}`}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            </button>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="col-span-3 flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => openEditProduct(p)}
-                              className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold transition-colors border border-blue-200"
-                            >
-                              تعديل
-                            </button>
-                            <button
-                              onClick={() => handleToggleSoldOut(p)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${p.stock > 0 ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200' : 'bg-green-50 hover:bg-green-100 text-green-600 border-green-200'}`}
-                            >
-                              {p.stock > 0 ? 'نفاد' : 'تفعيل'}
-                            </button>
-                            <button
-                              onClick={() => removeProduct(p.id)}
-                              className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors border border-red-200"
-                            >
-                              حذف
-                            </button>
-                          </div>
                         </div>
-                      ))}
-                    </div>
+
+                        {/* Price */}
+                        <div className="col-span-2 text-center">
+                          {p.salePrice ? (
+                            <div>
+                              <div className="font-bold text-primary-600">{p.salePrice} {settings.currency}</div>
+                              <div className="text-xs text-gray-400 line-through">{p.price}</div>
+                            </div>
+                          ) : (
+                            <div className="font-bold text-gray-900">{p.price} {settings.currency}</div>
+                          )}
+                        </div>
+
+                        {/* Stock */}
+                        <div className="col-span-2 text-center">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' :
+                            p.stock > 0 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                              'bg-red-50 text-red-700 border border-red-200'
+                            }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-green-500' :
+                              p.stock > 0 ? 'bg-yellow-500' :
+                                'bg-red-500'
+                              }`}></span>
+                            {p.stock > 0 ? p.stock : 'نفد'}
+                          </span>
+                        </div>
+
+                        {/* Best Seller */}
+                        <div className="col-span-1 text-center">
+                          <button
+                            onClick={() => handleToggleBestSeller(p)}
+                            className={`p-2 rounded-lg transition-all ${p.isBestSeller ? 'bg-yellow-100 text-yellow-500 shadow-sm' : 'bg-gray-100 text-gray-300 hover:text-yellow-400 hover:bg-yellow-50'}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="col-span-3 flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => openEditProduct(p)}
+                            className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold transition-colors border border-blue-200"
+                          >
+                            تعديل
+                          </button>
+                          <button
+                            onClick={() => handleToggleSoldOut(p)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${p.stock > 0 ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 border-orange-200' : 'bg-green-50 hover:bg-green-100 text-green-600 border-green-200'}`}
+                          >
+                            {p.stock > 0 ? 'نفاد' : 'تفعيل'}
+                          </button>
+                          <button
+                            onClick={() => removeProduct(p.id)}
+                            className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold transition-colors border border-red-200"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Table Footer */}
@@ -1443,354 +1384,282 @@ const Admin: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              <input type="text" className="w-full px-5 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 font-medium" value={settingsForm.name} onChange={e => setSettingsForm({ ...settingsForm, name: e.target.value })} />
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="text-sm font-bold text-gray-700 block mb-2">شعار نصي (حرف)</label>
-                <input type="text" maxLength={2} className="w-24 text-center px-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-xl" value={settingsForm.logo} onChange={e => setSettingsForm({ ...settingsForm, logo: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-sm font-bold text-gray-700 block mb-2">صورة الشعار</label>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors" />
-                {settings.logoUrl && (
-                  <div className="mt-3 flex items-center gap-3 bg-white w-fit p-2 pr-4 rounded-lg border border-gray-200">
-                    <img src={settings.logoUrl} className="h-10 w-10 rounded-lg object-cover" alt="logo preview" />
-                    <button type="button" onClick={handleResetLogo} className="text-xs font-bold text-red-500 hover:bg-red-50 px-2 py-1 rounded">حذف</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-        <button type="submit" className="w-full bg-gradient-to-r from-primary-600 to-secondary-900 text-white py-4 rounded-xl font-bold hover:opacity-95 transition text-lg shadow-xl shadow-primary-500/20">حفظ كافة التغييرات</button>
-      </form>
-    </div>
-  )
-}
-
-{/* SHORTAGES TAB */ }
-{
-  activeTab === 'shortages' && (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-2xl font-black text-gray-900 text-red-600 flex items-center gap-2">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            نواقص المخزون
-          </h2>
-          <p className="text-gray-500 text-sm mt-1">المنتجات التي قاربت على النفاد (أقل من 5 قطع)</p>
-        </div>
-        <div className="bg-red-50 text-red-700 px-4 py-2 rounded-xl font-bold border border-red-100">
-          {products.filter(p => p.stock <= 5).length} منتجات
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm overflow-x-auto">
-        <div className="min-w-[800px]">
-          <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-red-50/50 border-b border-gray-200">
-            <div className="col-span-5 text-sm font-bold text-gray-600">المنتج</div>
-            <div className="col-span-2 text-sm font-bold text-gray-600 text-center">المخزون الحالي</div>
-            <div className="col-span-2 text-sm font-bold text-gray-600 text-center">الحالة</div>
-            <div className="col-span-3 text-sm font-bold text-gray-600 text-center">تحديث سريع</div>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {products.filter(p => p.stock <= 5).length === 0 ? (
-              <div className="py-16 text-center text-green-500">
-                <svg className="w-16 h-16 mx-auto mb-3 text-green-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="font-bold text-lg">المخزون ممتاز!</p>
-                <p className="text-sm text-gray-400">لا توجد نواقص حالياً</p>
-              </div>
-            ) : products.filter(p => p.stock <= 5).map(p => (
-              <div key={p.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                <div className="col-span-5 flex items-center gap-3">
-                  <img src={p.image} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
+                {/* Branding */}
+                <div className="space-y-6">
                   <div>
-                    <p className="font-bold text-gray-900 text-sm">{p.name}</p>
-                    <p className="text-xs text-gray-400">{getCategoryName(p.category)}</p>
+                    <label className="text-sm font-bold text-gray-700 block mb-2">اسم المتجر</label>
+                    <input type="text" className="w-full px-5 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 font-medium" value={settingsForm.name} onChange={e => setSettingsForm({ ...settingsForm, name: e.target.value })} />
                   </div>
-                </div>
-                <div className="col-span-2 text-center">
-                  <span className="text-2xl font-black text-red-600">{p.stock}</span>
-                </div>
-                <div className="col-span-2 text-center">
-                  {p.stock === 0 ? (
-                    <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">نفدت الكمية</span>
-                  ) : (
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded">منخفض جداً</span>
-                  )}
-                </div>
-                <div className="col-span-3 flex justify-center gap-2">
-                  <button
-                    onClick={() => openEditProduct(p)}
-                    className="px-4 py-2 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-lg hover:border-primary-500 hover:text-primary-600 transition-colors shadow-sm"
-                  >
-                    إدارة المنتج
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-        </div >
-      </main >
-
-  {/* MODAL: ADD PRODUCT */ }
-{
-  showProductModal && (
-    <div className="fixed inset-0 z-50 overflow-y-auto" dir="rtl">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity" onClick={() => setShowProductModal(false)}>
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
-        </div>
-
-        <div className="inline-block align-bottom bg-white rounded-3xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-          <div className="bg-white p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-gray-900">إضافة منتج جديد</h3>
-              <button onClick={() => setShowProductModal(false)} className="bg-gray-50 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">&times;</button>
-            </div>
-            <form onSubmit={handleAddProduct} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">اسم المنتج</label>
-                  <input required type="text" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.name} onChange={e => setProdForm({ ...prodForm, name: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">صورة المنتج</label>
-                  <div className="relative">
-                    <input ref={prodImageRef} type="file" accept="image/*" onChange={handleProductImageUpload} className="hidden" />
-                    <button type="button" onClick={() => prodImageRef.current?.click()} className="w-full px-4 py-2.5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-gray-500 text-sm hover:bg-gray-100 text-right truncate">
-                      {prodForm.image ? 'تم اختيار صورة ✅' : 'اختر صورة من الجهاز...'}
-                    </button>
-                  </div>
-                  {/* Hidden text input for fallback URL if needed */}
-                  <input type="hidden" value={prodForm.image} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">الفئة</label>
-                  <input list="categories" required type="text" placeholder="اكتب أو اختر..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.category} onChange={e => setProdForm({ ...prodForm, category: e.target.value })} />
-                  <datalist id="categories">
-                    {existingCategories.map(c => <option key={c} value={c} />)}
-                  </datalist>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">السعر الأصلي</label>
-                  <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.price} onChange={e => setProdForm({ ...prodForm, price: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">سعر الخصم</label>
-                  <input type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.salePrice} onChange={e => setProdForm({ ...prodForm, salePrice: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">الكمية (المخزون)</label>
-                  <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.stock} onChange={e => setProdForm({ ...prodForm, stock: Number(e.target.value) })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">الكمية (المخزون)</label>
-                  <input type="number" min="0" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.stock} onChange={e => setProdForm({ ...prodForm, stock: parseInt(e.target.value) || 0 })} />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100 cursor-pointer" onClick={() => setProdForm({ ...prodForm, isBestSeller: !prodForm.isBestSeller })}>
-                <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${prodForm.isBestSeller ? 'bg-yellow-400 border-yellow-400' : 'bg-white border-gray-300'}`}>
-                  {prodForm.isBestSeller && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                </div>
-                <label className="text-sm font-bold text-yellow-800 cursor-pointer select-none">تمييز كـ "الأكثر مبيعاً"؟</label>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-500 block mb-1.5">الوصف</label>
-                <textarea required rows={3} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.description} onChange={e => setProdForm({ ...prodForm, description: e.target.value })} />
-              </div>
-
-              {/* Options Simplified */}
-              <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
-                <div className="mb-4">
-                  <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span className="text-lg">⚙️</span> خيارات المنتج (Variants)
-                  </h4>
-                  <p className="text-xs text-gray-400 mt-1">أضف خيارات مثل اللون، المقاس، أو الذاكرة.</p>
-                </div>
-
-                <div className="grid grid-cols-5 gap-3 mb-4 items-end">
-                  <div className="col-span-2">
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الخيار</label>
-                    <input type="text" placeholder="مثلاً: اللون" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={newOptionName} onChange={e => setNewOptionName(e.target.value)} />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">القيم (مفصولة بفاصلة)</label>
-                    <input type="text" placeholder="أحمر، أزرق، أخضر" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={newOptionValues} onChange={e => setNewOptionValues(e.target.value)} />
-                  </div>
-                  <div className="col-span-1">
-                    <button type="button" onClick={handleAddOption} className="w-full bg-secondary-900 text-white py-2.5 rounded-lg font-bold hover:bg-black transition-colors flex items-center justify-center text-lg leading-none pb-1">+</button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {prodOptions.map((opt, i) => (
-                    <div key={i} className="bg-white border border-gray-200 p-3 rounded-lg flex items-center justify-between shadow-sm">
-                      <div>
-                        <span className="text-xs font-bold text-gray-500 block">{opt.name}</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {opt.values.map(v => (
-                            <span key={v} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{v}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <button type="button" onClick={() => handleRemoveOption(i)} className="text-red-400 hover:text-red-600 bg-red-50 p-2 rounded-lg transition-colors">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="text-sm font-bold text-gray-700 block mb-2">شعار نصي (حرف)</label>
+                      <input type="text" maxLength={2} className="w-24 text-center px-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-xl" value={settingsForm.logo} onChange={e => setSettingsForm({ ...settingsForm, logo: e.target.value })} />
                     </div>
-                  ))}
-                  {prodOptions.length === 0 && <div className="text-center py-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 text-xs">لا توجد خيارات مضافة بعد.</div>}
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button type="submit" className="w-full bg-primary-600 text-white py-4 rounded-xl hover:bg-primary-700 font-bold shadow-xl shadow-primary-500/30 transition-all text-lg">نشر المنتج في المتجر</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-{/* MODAL: EDIT PRODUCT */ }
-{
-  showEditModal && editingProduct && (
-    <div className="fixed inset-0 z-50 overflow-y-auto" dir="rtl">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity" onClick={() => setShowEditModal(false)}>
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
-        </div>
-        <div className="inline-block align-bottom bg-white rounded-3xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-          <div className="bg-white p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-black text-gray-900">تعديل المنتج</h3>
-              <button onClick={() => setShowEditModal(false)} className="bg-gray-50 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">&times;</button>
-            </div>
-            <form onSubmit={handleSaveEditProduct} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">اسم المنتج</label>
-                  <input required type="text" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">صورة المنتج</label>
-                  <div className="flex items-center gap-2">
-                    <input ref={editImageRef} type="file" accept="image/*" onChange={handleEditImageUpload} className="hidden" />
-                    <button type="button" onClick={() => editImageRef.current?.click()} className="px-4 py-2.5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-gray-500 text-sm hover:bg-gray-100 text-right truncate">
-                      {editForm.image ? 'تغيير الصورة' : 'اختر صورة...'}
-                    </button>
-                    {editForm.image && (
-                      <button type="button" onClick={handleRemoveEditImage} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold">حذف الصورة</button>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">الفئة</label>
-                  <input type="text" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">السعر الأصلي</label>
-                  <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">سعر الخصم</label>
-                  <input type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.salePrice} onChange={e => setEditForm({ ...editForm, salePrice: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-gray-500 block mb-1.5">الكمية (المخزون)</label>
-                  <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.stock} onChange={e => setEditForm({ ...editForm, stock: Number(e.target.value) })} />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100 cursor-pointer" onClick={() => setEditForm({ ...editForm, isBestSeller: !editForm.isBestSeller })}>
-                <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${editForm.isBestSeller ? 'bg-yellow-400 border-yellow-400' : 'bg-white border-gray-300'}`}>
-                  {editForm.isBestSeller && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                </div>
-                <label className="text-sm font-bold text-yellow-800 cursor-pointer select-none">تمييز كـ "الأكثر مبيعاً"؟</label>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 block mb-1.5">الوصف</label>
-                <textarea rows={3} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
-              </div>
-
-              {/* Options/Variants for Edit */}
-              <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
-                <div className="mb-4">
-                  <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                    <span className="text-lg">⚙️</span> خيارات المنتج (Variants)
-                  </h4>
-                  <p className="text-xs text-gray-400 mt-1">أضف خيارات مثل اللون، المقاس، أو الذاكرة.</p>
-                </div>
-
-                <div className="grid grid-cols-5 gap-3 mb-4 items-end">
-                  <div className="col-span-2">
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الخيار</label>
-                    <input type="text" placeholder="مثلاً: اللون" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={editOptionName} onChange={e => setEditOptionName(e.target.value)} />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-bold text-gray-500 mb-1 block">القيم (مفصولة بفاصلة)</label>
-                    <input type="text" placeholder="أحمر، أزرق، أخضر" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={editOptionValues} onChange={e => setEditOptionValues(e.target.value)} />
-                  </div>
-                  <div className="col-span-1">
-                    <button type="button" onClick={handleAddEditOption} className="w-full bg-secondary-900 text-white py-2.5 rounded-lg font-bold hover:bg-black transition-colors flex items-center justify-center text-lg leading-none pb-1">+</button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {editOptions.map((opt, i) => (
-                    <div key={i} className="bg-white border border-gray-200 p-3 rounded-lg flex items-center justify-between shadow-sm">
-                      <div>
-                        <span className="text-xs font-bold text-gray-500 block">{opt.name}</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {opt.values.map(v => (
-                            <span key={v} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{v}</span>
-                          ))}
+                    <div>
+                      <label className="text-sm font-bold text-gray-700 block mb-2">صورة الشعار</label>
+                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 transition-colors" />
+                      {settings.logoUrl && (
+                        <div className="mt-3 flex items-center gap-3 bg-white w-fit p-2 pr-4 rounded-lg border border-gray-200">
+                          <img src={settings.logoUrl} className="h-10 w-10 rounded-lg object-cover" alt="logo preview" />
+                          <button type="button" onClick={handleResetLogo} className="text-xs font-bold text-red-500 hover:bg-red-50 px-2 py-1 rounded">حذف</button>
                         </div>
-                      </div>
-                      <button type="button" onClick={() => handleRemoveEditOption(i)} className="text-red-400 hover:text-red-600 bg-red-50 p-2 rounded-lg transition-colors">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
+                      )}
                     </div>
-                  ))}
-                  {editOptions.length === 0 && <div className="text-center py-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 text-xs">لا توجد خيارات مضافة بعد.</div>}
+                  </div>
                 </div>
-              </div>
 
-              <div className="pt-2">
-                <button type="submit" className="w-full bg-primary-600 text-white py-4 rounded-xl hover:bg-primary-700 font-bold shadow-xl shadow-primary-500/30 transition-all text-lg">حفظ التعديلات</button>
+                <button type="submit" className="w-full bg-gradient-to-r from-primary-600 to-secondary-900 text-white py-4 rounded-xl font-bold hover:opacity-95 transition text-lg shadow-xl shadow-primary-500/20">حفظ كافة التغييرات</button>
+              </form>
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      {/* MODAL: ADD PRODUCT */}
+      {showProductModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" dir="rtl">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" onClick={() => setShowProductModal(false)}>
+              <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+            </div>
+
+            <div className="inline-block align-bottom bg-white rounded-3xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+              <div className="bg-white p-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-black text-gray-900">إضافة منتج جديد</h3>
+                  <button onClick={() => setShowProductModal(false)} className="bg-gray-50 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">&times;</button>
+                </div>
+                <form onSubmit={handleAddProduct} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">اسم المنتج</label>
+                      <input required type="text" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.name} onChange={e => setProdForm({ ...prodForm, name: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">صورة المنتج</label>
+                      <div className="relative">
+                        <input ref={prodImageRef} type="file" accept="image/*" onChange={handleProductImageUpload} className="hidden" />
+                        <button type="button" onClick={() => prodImageRef.current?.click()} className="w-full px-4 py-2.5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-gray-500 text-sm hover:bg-gray-100 text-right truncate">
+                          {prodForm.image ? 'تم اختيار صورة ✅' : 'اختر صورة من الجهاز...'}
+                        </button>
+                      </div>
+                      {/* Hidden text input for fallback URL if needed */}
+                      <input type="hidden" value={prodForm.image} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">الفئة</label>
+                      <input list="categories" required type="text" placeholder="اكتب أو اختر..." className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.category} onChange={e => setProdForm({ ...prodForm, category: e.target.value })} />
+                      <datalist id="categories">
+                        {existingCategories.map(c => <option key={c} value={c} />)}
+                      </datalist>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">السعر الأصلي</label>
+                      <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.price} onChange={e => setProdForm({ ...prodForm, price: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">سعر الخصم</label>
+                      <input type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.salePrice} onChange={e => setProdForm({ ...prodForm, salePrice: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">الكمية (المخزون)</label>
+                      <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.stock} onChange={e => setProdForm({ ...prodForm, stock: Number(e.target.value) })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">الكمية (المخزون)</label>
+                      <input type="number" min="0" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.stock} onChange={e => setProdForm({ ...prodForm, stock: parseInt(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100 cursor-pointer" onClick={() => setProdForm({ ...prodForm, isBestSeller: !prodForm.isBestSeller })}>
+                    <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${prodForm.isBestSeller ? 'bg-yellow-400 border-yellow-400' : 'bg-white border-gray-300'}`}>
+                      {prodForm.isBestSeller && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    <label className="text-sm font-bold text-yellow-800 cursor-pointer select-none">تمييز كـ "الأكثر مبيعاً"؟</label>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 block mb-1.5">الوصف</label>
+                    <textarea required rows={3} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={prodForm.description} onChange={e => setProdForm({ ...prodForm, description: e.target.value })} />
+                  </div>
+
+                  {/* Options Simplified */}
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                        <span className="text-lg">⚙️</span> خيارات المنتج (Variants)
+                      </h4>
+                      <p className="text-xs text-gray-400 mt-1">أضف خيارات مثل اللون، المقاس، أو الذاكرة.</p>
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-3 mb-4 items-end">
+                      <div className="col-span-2">
+                        <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الخيار</label>
+                        <input type="text" placeholder="مثلاً: اللون" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={newOptionName} onChange={e => setNewOptionName(e.target.value)} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs font-bold text-gray-500 mb-1 block">القيم (مفصولة بفاصلة)</label>
+                        <input type="text" placeholder="أحمر، أزرق، أخضر" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={newOptionValues} onChange={e => setNewOptionValues(e.target.value)} />
+                      </div>
+                      <div className="col-span-1">
+                        <button type="button" onClick={handleAddOption} className="w-full bg-secondary-900 text-white py-2.5 rounded-lg font-bold hover:bg-black transition-colors flex items-center justify-center text-lg leading-none pb-1">+</button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {prodOptions.map((opt, i) => (
+                        <div key={i} className="bg-white border border-gray-200 p-3 rounded-lg flex items-center justify-between shadow-sm">
+                          <div>
+                            <span className="text-xs font-bold text-gray-500 block">{opt.name}</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {opt.values.map(v => (
+                                <span key={v} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{v}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveOption(i)} className="text-red-400 hover:text-red-600 bg-red-50 p-2 rounded-lg transition-colors">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                      {prodOptions.length === 0 && <div className="text-center py-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 text-xs">لا توجد خيارات مضافة بعد.</div>}
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button type="submit" className="w-full bg-primary-600 text-white py-4 rounded-xl hover:bg-primary-700 font-bold shadow-xl shadow-primary-500/30 transition-all text-lg">نشر المنتج في المتجر</button>
+                  </div>
+                </form>
               </div>
-            </form>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
+      )}
 
-    </div >
+      {/* MODAL: EDIT PRODUCT */}
+      {showEditModal && editingProduct && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" dir="rtl">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" onClick={() => setShowEditModal(false)}>
+              <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"></div>
+            </div>
+            <div className="inline-block align-bottom bg-white rounded-3xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+              <div className="bg-white p-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-black text-gray-900">تعديل المنتج</h3>
+                  <button onClick={() => setShowEditModal(false)} className="bg-gray-50 p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">&times;</button>
+                </div>
+                <form onSubmit={handleSaveEditProduct} className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">اسم المنتج</label>
+                      <input required type="text" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">صورة المنتج</label>
+                      <div className="flex items-center gap-2">
+                        <input ref={editImageRef} type="file" accept="image/*" onChange={handleEditImageUpload} className="hidden" />
+                        <button type="button" onClick={() => editImageRef.current?.click()} className="px-4 py-2.5 bg-gray-50 border border-dashed border-gray-300 rounded-xl text-gray-500 text-sm hover:bg-gray-100 text-right truncate">
+                          {editForm.image ? 'تغيير الصورة' : 'اختر صورة...'}
+                        </button>
+                        {editForm.image && (
+                          <button type="button" onClick={handleRemoveEditImage} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold">حذف الصورة</button>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">الفئة</label>
+                      <input type="text" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">السعر الأصلي</label>
+                      <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">سعر الخصم</label>
+                      <input type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.salePrice} onChange={e => setEditForm({ ...editForm, salePrice: e.target.value })} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 block mb-1.5">الكمية (المخزون)</label>
+                      <input required type="number" className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.stock} onChange={e => setEditForm({ ...editForm, stock: Number(e.target.value) })} />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100 cursor-pointer" onClick={() => setEditForm({ ...editForm, isBestSeller: !editForm.isBestSeller })}>
+                    <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${editForm.isBestSeller ? 'bg-yellow-400 border-yellow-400' : 'bg-white border-gray-300'}`}>
+                      {editForm.isBestSeller && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    <label className="text-sm font-bold text-yellow-800 cursor-pointer select-none">تمييز كـ "الأكثر مبيعاً"؟</label>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-500 block mb-1.5">الوصف</label>
+                    <textarea rows={3} className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500" value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
+                  </div>
+
+                  {/* Options/Variants for Edit */}
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                        <span className="text-lg">⚙️</span> خيارات المنتج (Variants)
+                      </h4>
+                      <p className="text-xs text-gray-400 mt-1">أضف خيارات مثل اللون، المقاس، أو الذاكرة.</p>
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-3 mb-4 items-end">
+                      <div className="col-span-2">
+                        <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الخيار</label>
+                        <input type="text" placeholder="مثلاً: اللون" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={editOptionName} onChange={e => setEditOptionName(e.target.value)} />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-xs font-bold text-gray-500 mb-1 block">القيم (مفصولة بفاصلة)</label>
+                        <input type="text" placeholder="أحمر، أزرق، أخضر" className="w-full px-3 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500" value={editOptionValues} onChange={e => setEditOptionValues(e.target.value)} />
+                      </div>
+                      <div className="col-span-1">
+                        <button type="button" onClick={handleAddEditOption} className="w-full bg-secondary-900 text-white py-2.5 rounded-lg font-bold hover:bg-black transition-colors flex items-center justify-center text-lg leading-none pb-1">+</button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      {editOptions.map((opt, i) => (
+                        <div key={i} className="bg-white border border-gray-200 p-3 rounded-lg flex items-center justify-between shadow-sm">
+                          <div>
+                            <span className="text-xs font-bold text-gray-500 block">{opt.name}</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {opt.values.map(v => (
+                                <span key={v} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{v}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveEditOption(i)} className="text-red-400 hover:text-red-600 bg-red-50 p-2 rounded-lg transition-colors">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                      {editOptions.length === 0 && <div className="text-center py-4 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 text-xs">لا توجد خيارات مضافة بعد.</div>}
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button type="submit" className="w-full bg-primary-600 text-white py-4 rounded-xl hover:bg-primary-700 font-bold shadow-xl shadow-primary-500/30 transition-all text-lg">حفظ التعديلات</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
   );
 };
 
