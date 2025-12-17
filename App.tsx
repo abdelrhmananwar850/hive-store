@@ -55,7 +55,7 @@ const AppContent: React.FC = () => {
       {!isAdminPage && <BackgroundLayer />}
 
       {/* Content layer */}
-      <div className="relative z-10">
+      <div className="flex flex-col min-h-screen bg-gray-50 pt-16">
         {!isAdminPage && <Navbar />}
         {!isAdminPage && <CartSidebar />}
         <main>
