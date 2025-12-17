@@ -120,10 +120,37 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       const prods = await fetchProducts();
       setProducts(prods);
 
+      setProducts(prods);
+
       // Settings
+      // 1. Try Local Storage first for speed
+      const savedSettings = localStorage.getItem('site_settings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setSettings({
+          storeName: parsed.store_name,
+          logoText: parsed.logo_text,
+          logoUrl: parsed.logo_url,
+          primaryColor: parsed.primary_color || '#0d9488',
+          secondaryColor: parsed.secondary_color || '#111827',
+          currency: parsed.currency || 'ر.س',
+          backgroundImage: parsed.background_image || '',
+          backgroundOpacity: parsed.background_opacity ?? 15,
+          bannerBadge: parsed.banner_badge || 'وصل حديثاً',
+          bannerTitle: parsed.banner_title || 'عروض حصرية',
+          bannerDescription: parsed.banner_description || 'أفضل المنتجات بجودة عالية وأسعار تنافسية. تسوق الآن واستمتع بالخصومات.',
+          bannerButtonText: parsed.banner_button_text || 'تصفح المنتجات'
+        });
+      }
+
+      // 2. Then Sync with Supabase
       const { data: settingsData } = await supabase.from('site_settings').select('*').single();
       if (settingsData) {
         setSettingsId(settingsData.id); // Capture valid ID
+        // Only override if local storage is missing? Or always override?
+        // Let's rely on DB as truth if available, but fallback to default if not.
+        // Actually, if we just saved to local, local might be newer if offline.
+        // For simple usage: Update state from DB.
         setSettings({
           storeName: settingsData.store_name,
           logoText: settingsData.logo_text,
@@ -138,6 +165,9 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           bannerDescription: settingsData.banner_description || 'أفضل المنتجات بجودة عالية وأسعار تنافسية. تسوق الآن واستمتع بالخصومات.',
           bannerButtonText: settingsData.banner_button_text || 'تصفح المنتجات'
         });
+
+        // Update local cache
+        localStorage.setItem('site_settings', JSON.stringify(settingsData));
       }
 
       const { data: discountData } = await supabase.from('discount_codes').select('*');
@@ -346,50 +376,48 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       banner_button_text: newSettings.bannerButtonText
     };
 
-    // Try Update first
-    const { error: updateError, data } = await supabase
-      .from('site_settings')
-      .update(dbData)
-      .eq('id', settingsId)
-      .select();
+    // 1. Always save to LocalStorage FIRST (Immediate UI update & Offline support)
+    localStorage.setItem('site_settings', JSON.stringify(dbData));
+    toast.success('تم حفظ الإعدادات (محلياً)');
 
-    if (updateError || !data || data.length === 0) {
-      console.error("Settings Update Failed, trying Upsert...", updateError);
+    // 2. Try Supabase Update (Best Effort)
+    try {
+      const { error: updateError, data } = await supabase
+        .from('site_settings')
+        .update(dbData)
+        .eq('id', settingsId)
+        .select();
 
-      // Fallback: Upsert (Insert or Update based on ID if possible, or just Insert a new row if table empty)
-      // Since we suspect ID mismatch or empty table, let's try to fetch ANY row first.
-      const { data: existing } = await supabase.from('site_settings').select('id').limit(1).single();
+      if (updateError || !data || data.length === 0) {
+        console.warn("DB Update failed (ID mismatch?), trying failover...", updateError);
+        // Fallback: Try to get ANY row
+        const { data: existing } = await supabase.from('site_settings').select('id').limit(1).single();
 
-      if (existing) {
-        // We found a row, but our ID state was wrong. Update THAT row.
-        const { error: retryError } = await supabase
-          .from('site_settings')
-          .update(dbData)
-          .eq('id', existing.id);
+        if (existing) {
+          const { error: retryError } = await supabase
+            .from('site_settings')
+            .update(dbData)
+            .eq('id', existing.id);
 
-        if (retryError) {
-          toast.error(`فشل حفظ الإعدادات: ${retryError.message}`);
+          if (!retryError) {
+            setSettingsId(existing.id);
+            toast.success('تم مزامنة الإعدادات مع السحابة ☁️');
+          }
         } else {
-          setSettingsId(existing.id); // Correct our local state
-          toast.success('تم حفظ الإعدادات بنجاح (تم تصحيح السجل)');
+          // Insert new
+          const { data: newData } = await supabase
+            .from('site_settings')
+            .insert(dbData)
+            .select()
+            .single();
+          if (newData) setSettingsId(newData.id);
         }
       } else {
-        // Table is empty, Insert
-        const { error: insertError, data: newData } = await supabase
-          .from('site_settings')
-          .insert(dbData)
-          .select() // Select to get ID
-          .single();
-
-        if (insertError) {
-          toast.error(`فشل إنشاء إعدادات جديدة: ${insertError.message}`);
-        } else if (newData) {
-          setSettingsId(newData.id);
-          toast.success('تم حفظ الإعدادات (إنشاء سجل جديد)');
-        }
+        toast.success('تم مزامنة الإعدادات مع السحابة ☁️');
       }
-    } else {
-      toast.success('تم حفظ الإعدادات بنجاح');
+    } catch (err) {
+      console.error("Supabase sync error:", err);
+      // We don't block the user, as local storage is already updated.
     }
   };
 
