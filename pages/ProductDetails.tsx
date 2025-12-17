@@ -13,7 +13,7 @@ const ProductDetails: React.FC = () => {
   const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: string }>({});
   const [isAdding, setIsAdding] = useState(false);
   const { addToCart, cart, products, settings, getProductReviews, wishlist, toggleWishlist } = useStore();
-  const barcodeRef = useRef<SVGSVGElement | null>(null);
+
 
   // Get reviews for this product
   const productReviews = React.useMemo(() => {
@@ -103,13 +103,7 @@ const ProductDetails: React.FC = () => {
     return [...sameCategory, ...others].slice(0, 4);
   }, [product, products]);
 
-  useEffect(() => {
-    if (product?.barcode && barcodeRef.current && (window as any).JsBarcode) {
-      try {
-        (window as any).JsBarcode(barcodeRef.current, product.barcode, { format: 'CODE128', displayValue: true, fontSize: 14, height: 60 });
-      } catch { }
-    }
-  }, [product?.barcode]);
+
 
   const handleAddToCart = () => {
     if (!product || isAdding) return;
@@ -260,12 +254,7 @@ const ProductDetails: React.FC = () => {
               <h3 className="text-sm font-bold text-gray-900 mb-2">الوصف</h3>
               <p className="text-gray-500 leading-relaxed">{product.description}</p>
             </div>
-            {product.barcode && (
-              <div className="border-t border-gray-100 pt-6 mb-6">
-                <h3 className="text-sm font-bold text-gray-900 mb-2">الباركود</h3>
-                <svg ref={barcodeRef}></svg>
-              </div>
-            )}
+
 
             {/* Options */}
             {product.options && product.options.length > 0 && (
