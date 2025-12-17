@@ -511,13 +511,33 @@ const Admin: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // Mobile Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-gray-50/50 font-sans flex" dir="rtl">
+    <div className="min-h-screen bg-gray-50/50 font-sans flex flex-col md:flex-row" dir="rtl">
       <SEO title="لوحة التحكم" />
 
-      {/* 1. SIDEBAR (Fixed Right) */}
-      <aside className="w-64 bg-gradient-to-b from-primary-600 to-primary-700 border-l border-primary-700 h-screen fixed top-0 right-0 z-40 shadow-lg flex flex-col text-white">
-        <div className="h-20 flex items-center gap-3 px-6 border-b border-primary-500/30">
+      {/* MOBILE HEADER */}
+      <div className="md:hidden bg-primary-700 text-white p-4 flex items-center justify-between sticky top-0 z-30 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 w-8 h-8 rounded-lg flex items-center justify-center font-bold backdrop-blur text-sm">
+            {settings.logoText}
+          </div>
+          <h1 className="font-bold text-lg">لوحة المدير</h1>
+        </div>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+
+      {/* 1. SIDEBAR (Responsive) */}
+      <aside className={`
+        fixed inset-y-0 right-0 z-40 w-64 bg-gradient-to-b from-primary-600 to-primary-700 text-white shadow-2xl transform transition-transform duration-300 ease-in-out
+        md:translate-x-0 md:static md:shadow-none md:h-screen
+        ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}>
+        <div className="hidden md:flex h-20 items-center gap-3 px-6 border-b border-primary-500/30">
           <div className="bg-white/20 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold backdrop-blur">
             {settings.logoText}
           </div>
@@ -554,10 +574,10 @@ const Admin: React.FC = () => {
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => { setActiveTab(item.id as any); setIsSidebarOpen(false); }}
               className={`group w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 ${activeTab === item.id
-                  ? 'bg-white/20 text-white shadow-sm translate-x-1'
-                  : 'text-white/80 hover:text-white hover:bg-white/10'
+                ? 'bg-white/20 text-white shadow-sm translate-x-1'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
             >
               <span className="text-lg">{item.icon}</span> {item.label}
@@ -577,8 +597,16 @@ const Admin: React.FC = () => {
         </div>
       </aside>
 
-      {/* 2. MAIN CONTENT (Margin Right for Sidebar) */}
-      <main className="flex-1 mr-64 p-8 min-h-screen">
+      {/* OVERLAY for Mobile */}
+      {isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
+        />
+      )}
+
+      {/* 2. MAIN CONTENT (Flexible) */}
+      <main className="flex-1 p-4 md:p-8 min-h-screen overflow-x-hidden w-full">
 
         {/* Header Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
@@ -755,8 +783,8 @@ const Admin: React.FC = () => {
                   <button
                     onClick={() => setCategoryFilter('')}
                     className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${categoryFilter === ''
-                        ? 'bg-primary-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-primary-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                   >
                     الكل ({products.length})
@@ -766,8 +794,8 @@ const Admin: React.FC = () => {
                       key={cat}
                       onClick={() => setCategoryFilter(cat)}
                       className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${categoryFilter === cat
-                          ? 'bg-primary-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-primary-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
                       {cat} ({products.filter(p => getCategoryName(p.category) === cat).length})
@@ -829,12 +857,12 @@ const Admin: React.FC = () => {
                         {/* Stock */}
                         <div className="col-span-2 text-center">
                           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${p.stock > 10 ? 'bg-green-50 text-green-700 border border-green-200' :
-                              p.stock > 0 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                'bg-red-50 text-red-700 border border-red-200'
+                            p.stock > 0 ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                              'bg-red-50 text-red-700 border border-red-200'
                             }`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${p.stock > 10 ? 'bg-green-500' :
-                                p.stock > 0 ? 'bg-yellow-500' :
-                                  'bg-red-500'
+                              p.stock > 0 ? 'bg-yellow-500' :
+                                'bg-red-500'
                               }`}></span>
                             {p.stock > 0 ? p.stock : 'نفد'}
                           </span>
@@ -1009,8 +1037,8 @@ const Admin: React.FC = () => {
                               <button
                                 onClick={() => updateOrderStatus(order.id, 'pending')}
                                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${order.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600'
+                                  ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
+                                  : 'bg-gray-100 text-gray-500 hover:bg-yellow-50 hover:text-yellow-600'
                                   }`}
                               >
                                 ⏳ انتظار
@@ -1018,8 +1046,8 @@ const Admin: React.FC = () => {
                               <button
                                 onClick={() => updateOrderStatus(order.id, 'shipped')}
                                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${order.status === 'shipped'
-                                    ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600'
+                                  ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
+                                  : 'bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-600'
                                   }`}
                               >
                                 🚚 شحن
