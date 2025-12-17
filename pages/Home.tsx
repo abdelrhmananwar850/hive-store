@@ -77,7 +77,7 @@ const Home: React.FC = () => {
 
         {/* 3. Main Product Grid with Filters */}
         <section id="shop" className="scroll-mt-24">
-          <div className="sticky top-20 z-30 bg-gray-50/95 backdrop-blur-md py-4 -mx-4 px-4 mb-6 border-y border-gray-200 shadow-sm flex items-center justify-between flex-wrap gap-4">
+          <div className="sticky top-0 z-30 bg-gray-50/95 backdrop-blur-md py-4 -mx-4 px-4 mb-6 border-y border-gray-200 shadow-sm flex items-center justify-between flex-wrap gap-4">
             <h2 className="text-xl font-bold text-gray-900">كل المنتجات</h2>
 
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -85,11 +85,10 @@ const Home: React.FC = () => {
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
-                    filter === cat
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${filter === cat
                       ? 'bg-secondary-900 text-white shadow-md transform scale-105'
                       : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-400'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>

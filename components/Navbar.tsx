@@ -50,9 +50,9 @@ const Navbar: React.FC = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={toggleCart}
-        className="fixed bottom-6 left-6 z-50 p-4 bg-primary-600 text-white rounded-full shadow-2xl hover:bg-primary-700 hover:shadow-primary-500/40 transition-all border-4 border-white/20 backdrop-blur-sm"
+        className="fixed bottom-6 left-6 z-50 p-3 bg-primary-600 text-white rounded-full shadow-2xl hover:bg-primary-700 hover:shadow-primary-500/40 transition-all border-4 border-white/20 backdrop-blur-sm"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
         {totalItems > 0 && (
