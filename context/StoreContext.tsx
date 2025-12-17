@@ -368,12 +368,13 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       primary_color: newSettings.primaryColor,
       secondary_color: newSettings.secondaryColor,
       currency: newSettings.currency,
-      background_image: newSettings.backgroundImage,
-      background_opacity: newSettings.backgroundOpacity,
+      // background_image: newSettings.backgroundImage, // Column missing in DB, saving locally only
       banner_badge: newSettings.bannerBadge,
       banner_title: newSettings.bannerTitle,
       banner_description: newSettings.bannerDescription,
-      banner_button_text: newSettings.bannerButtonText
+      banner_button_text: newSettings.bannerButtonText,
+      background_image: newSettings.backgroundImage,
+      background_opacity: newSettings.backgroundOpacity
     };
 
     // 1. Always save to LocalStorage FIRST (Immediate UI update & Offline support)
