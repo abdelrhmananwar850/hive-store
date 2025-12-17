@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { StoreProvider, useStore } from './context/StoreContext';
 import Navbar from './components/Navbar';
 import CartSidebar from './components/CartSidebar';
+import WishlistSidebar from './components/WishlistSidebar';
 import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
 import Admin from './pages/Admin';
@@ -58,6 +59,7 @@ const AppContent: React.FC = () => {
       <div className="flex flex-col min-h-screen bg-gray-50">
         {!isAdminPage && <Navbar />}
         {!isAdminPage && <CartSidebar />}
+        {!isAdminPage && <WishlistSidebar />}
         <main>
           <Routes>
             <Route path="/" element={<Home />} />

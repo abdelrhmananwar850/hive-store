@@ -15,7 +15,9 @@ interface StoreContextType {
   reviews: Review[];
   isLoading: boolean;
   wishlist: string[];
+  isWishlistOpen: boolean;
   toggleWishlist: (productId: string) => void;
+  toggleWishlistModal: () => void;
 
   addToCart: (product: Product, selectedOptions?: { [key: string]: string }) => void;
   removeFromCart: (cartItemId: string) => void;
@@ -89,12 +91,16 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
 
+  const [settingsId, setSettingsId] = useState<number | string>(1);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+
   // 1. Load Data from Supabase
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       const MOCK = (import.meta as any).env?.VITE_MOCK_DATA === 'true';
       if (MOCK) {
+        // ... (mock logic kept same, abbreviated for brevity in diff if unchanged)
         setProducts([{
           id: 'p1',
           name: 'منتج تجريبي',
@@ -117,6 +123,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       // Settings
       const { data: settingsData } = await supabase.from('site_settings').select('*').single();
       if (settingsData) {
+        setSettingsId(settingsData.id); // Capture valid ID
         setSettings({
           storeName: settingsData.store_name,
           logoText: settingsData.logo_text,
@@ -337,12 +344,12 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       banner_title: newSettings.bannerTitle,
       banner_description: newSettings.bannerDescription,
       banner_button_text: newSettings.bannerButtonText
-    }).eq('id', 1);
+    }).eq('id', settingsId);
 
     // If no row exists (first run), insert
     const { count } = await supabase.from('site_settings').select('*', { count: 'exact', head: true });
     if (count === 0) {
-      await supabase.from('site_settings').insert({
+      const { data } = await supabase.from('site_settings').insert({
         store_name: newSettings.storeName,
         logo_text: newSettings.logoText,
         logo_url: newSettings.logoUrl,
@@ -509,6 +516,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return reviews.filter(r => r.productId === productId);
   };
 
+  const toggleWishlistModal = () => setIsWishlistOpen(!isWishlistOpen);
+
   return (
     <StoreContext.Provider value={{
       products,
@@ -521,6 +530,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       reviews,
       isLoading,
       wishlist,
+      isWishlistOpen,
+      toggleWishlistModal,
       toggleWishlist,
       addToCart, removeFromCart, updateQuantity, toggleCart, clearCart,
       loginAdmin, logoutAdmin, updateSettings, addProduct, editProduct, removeProduct,
