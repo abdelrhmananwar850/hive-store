@@ -515,7 +515,7 @@ const Admin: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 font-sans flex flex-col md:flex-row" dir="rtl">
+    <div className="h-screen bg-gray-50/50 font-sans flex flex-col md:flex-row overflow-hidden" dir="rtl">
       <SEO title="لوحة التحكم" />
 
       {/* MOBILE HEADER */}
@@ -606,7 +606,7 @@ const Admin: React.FC = () => {
       )}
 
       {/* 2. MAIN CONTENT (Flexible) */}
-      <main className="flex-1 p-4 md:p-8 min-h-screen overflow-x-hidden w-full">
+      <main className="flex-1 p-4 md:p-8 h-full overflow-y-auto w-full">
 
         {/* Header Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
